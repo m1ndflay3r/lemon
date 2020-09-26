@@ -1,0 +1,216 @@
+#!/usr/bin/env bash
+
+#
+#
+#  Lemonaid (i.e, the chroot side of the install)
+#
+#  Executing this script manually will result in bizzare behavior.
+#  Don't do it.
+#
+#
+#
+#
+#
+
+source /etc/lemon/lemon.conf
+source /etc/lemon/resources/lemonlib
+source /tmp/info.lemon
+
+# Readies pacman (adds multilib if enabled, initializes keyring, and syncs).
+function PREP {
+  if [ $MULTILIB == 1 ]; then
+    echo "Enabling multilib and syncing pacman..."
+    echo "[multilib]" >> /etc/pacman.conf
+    echo "Include = /etc/pacman.d/mirrorlist" >> /etc/pacman.conf
+  else
+    echo "Syncing pacman..."
+  fi
+  pacman-key --init
+  pacman-key --populate archlinux
+  if ! pacman -Sy; then
+    echo "Failed to sync pacman on install target! Check your internet settings, then restart lemon"
+    exit 1
+  fi
+}
+
+# Main installation procedure. Installs packages from packagelist and enables services from servicelist.
+# Failed operations are logged in /tmp/lemonaid.log.
+function MAIN {
+  if [ $PACKAGELIST == 1 ]; then
+    PACMANERRORS="0"
+    PKGS=$(cat /etc/lemon/lists/packagelist*)
+    for i in $PKGS; do
+      if ! pacman -S --needed --noconfirm $i; then
+        echo "Failed package: $i" >> /tmp/lemonaid.log
+        PACMANERRORS="1"
+      fi
+    done
+    if [ $PACMANERRORS == 1 ]; then
+      echo "Packagelist installation complete, but errors were detected."
+      echo "Offending packages are listed in /tmp/lemonaid.log"
+    fi
+  fi
+  if [ $SERVICELIST == 1 ]; then
+    SERVICEERRORS="0"
+    SERVICES=$(cat /etc/lemon/lists/servicelist*)
+    for i in $SERVICES; do
+      if ! systemctl enable $i; then
+        echo "Failed service: $i" >> /tmp/lemonaid.log
+        SERVICEERRORS="1"
+      fi
+    done
+    if [ $SERVICEERRORS == 1 ]; then
+      echo "Service list complete, but some services failed to enable properly."
+      echo "Offending services are listed in /tmp/lemonaid.log"
+    fi
+  fi
+}
+
+# Boot configuration.
+# Installs / configures both grub and refind depending on flags in lemon.conf.
+function BOOT {
+  if [ $GRUB == 1 ]; then
+    echo "Installing grub..."
+    sleep 0.5
+    ln -s /hostlvm /run/lvm
+    pacman -S --needed --noconfirm grub freetype2 fuse2 dosfstools os-prober mtools libisoburn
+    if [ $BOOTMODE == 0 ]; then
+      pacman -S --needed --noconfirm efibootmgr
+      if ! grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB; then
+        echo "Grub install failed! (EFI)" >> /tmp/lemonaid.log
+      else
+        grub-mkconfig -o /boot/grub/grub.cfg
+      fi
+    fi
+    if [ $BOOTMODE == 1 ]; then
+      if ! grub-install --target=i386-pc "$GRUBDRIVE"; then
+        echo "Grub install failed! (BIOS)" >> /tmp/lemonaid.log
+      else
+        grub-mkconfig -o /boot/grub/grub.cfg
+      fi
+    fi
+  else
+    echo "proceeding without grub"
+    ln -s /hostlvm /run/lvm
+  fi
+  if [ $REFIND == 1 ] && [ $BOOTMODE == 0 ]; then
+    pacman -S --needed --noconfirm refind-efi
+    if ! refind-install; then
+      echo "Refind install failed!" >> /tmp/lemonaid.log
+    fi
+  else
+    echo "Proceeding without rEFInd"
+  fi
+}
+
+# Configuration of the new system.
+# Includes things like hostname, user creation, etc
+function CONF {
+  untilyes '
+    unset CITY;
+    cd /usr/share/zoneinfo;
+    ls -a;
+    echo "Enter your region:";
+    read REGION;
+    if ! cd $REGION; then
+      until cd $REGION; do
+        echo "Invalid region!";
+        echo "Enter your region:";
+        read REGION;
+      done;
+    fi;
+    cd $REGION;
+    ls -a;
+    echo "Enter your city:";
+    read CITY;
+    echo "You have entered $REGION and $CITY - is this correct? (Y/n)"
+  '
+  ln -sf /usr/share/zoneinfo/$REGION/$CITY /etc/localtime
+  hwclock --systohc
+  untilyes '
+    unset ISO;
+    unset UTF;
+    echo "Please enter your preferred ISO locale. Eg: en_US";
+    read ISO;
+    echo "Please enter your preferred UTF locale. Eg: en_US.UTF-8";
+    read UTF;
+    echo ".";
+    echo "ISO locale: $ISO";
+    echo "UTF locale: $UTF";
+    echo ".";
+    echo "Is this correct? (Y/n)"
+  '
+  echo "$ISO ISO-8859-1" >> /etc/locale.gen
+  echo "$UTF UTF-8" >> /etc/locale.gen
+  locale-gen
+  VALID=("1" "2")
+  untilvalidresponse '
+    echo ".";
+    echo "Please select default locale:";
+    echo "1: $ISO";
+    echo "2: $UTF"
+  ' "${VALID[@]}"
+  if [ $RESPONSE == 1 ]; then
+    echo "LANG=$ISO" >> /etc/locale.conf
+  else
+    echo "LANG=$UTF" >> /etc/locale.conf
+  fi
+  untilyes '
+    echo "Please enter a name for the system (hostname):";
+    unset HOSTNAME;
+    read HOSTNAME;
+    echo "You have entered $HOSTNAME. Is this correct? (Y/n)"
+  '
+  echo $HOSTNAME > /etc/hostname
+  echo "127.0.0.1     localhost" >> /etc/hosts
+  echo "::1           localhost" >> /etc/hosts
+  echo "127.0.1.1     $HOSTNAME.localdomain $HOSTNAME" >> /etc/hosts
+  if [ $ROOT == 1 ] || [ $NONROOTUSER == 0 ]; then
+    echo "Enter new root password"
+    passwd root
+  fi
+  if [ $NONROOTUSER == 1 ]; then
+    untilyes '
+      echo "Enter non-root username:";
+      unset USER;
+      read USER;
+      echo "You have entered $USER for your username. Is this correct? (Y/n)"
+    '
+    useradd $USER
+    usermod -a -G wheel $USER
+    if [ $SUDO == 1 ]; then
+      if ! pacman -Ql sudo &> /dev/null; then
+        pacman -S --noconfirm --needed sudo &> /dev/null
+      fi
+      echo "$USER ALL=(ALL:ALL) ALL" >> /etc/sudoers
+    fi
+    echo "Enter a new password for $USER:"
+    passwd $USER
+    mkdir -p /home/$USER
+    cp /etc/skel/.bash* /home/$USER
+    echo "PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:$PATH" >> /home/$USER/.bashrc
+    echo "include /usr/share/nano/*.nanorc" > /home/$USER/.nanorc
+    chown $USER:$USER /home/$USER
+    chown $USER:$USER /home/$USER/.*
+  fi
+  LOG=/tmp/lemonaid.log
+  if [ -f "$LOG" ]; then
+    echo "Process completed sucessfuly, but errors were detected"
+    echo "Would you like to read the error log (Y/n)?"
+    if isyes; then
+      nano $LOG
+      echo "."
+    fi
+  fi
+  echo "Do you have any additional (manual) configuration to do inside the chroot environment? (Y/n)"
+  if isyes; then
+    echo "You will now be presented with a bash shell within a chroot of the installation target."
+    echo "When you are finished with additional setup, type exit and the install process will continue."
+    bash --login -i
+  fi
+}
+
+PREP
+MAIN
+BOOT
+CONF

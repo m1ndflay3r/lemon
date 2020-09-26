@@ -1,0 +1,14 @@
+packagelists and servicelists go here. You may use as many lists as you want, so long as their name begins with packagelist / servicelist (eg: packagelist1, packagelist2, etc).
+
+packagelists can be generated via the following command: "pacman -Qqe > /path/to/packagelist" (without quotes).
+
+servicelists must be created manually as far as I know. To make a servicelist, just list every service you wish enabled on its own line.
+
+eg:
+    ssh
+    lightdm
+    openntpd
+    bluetooth
+    NetworkManager
+    apache2
+

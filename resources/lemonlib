@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+
+# Promps for input, returns true if response is a variant of yes and returns false if it isn't.
+function isyes {
+  unset ANSWER
+  read ANSWER
+  if [ $ANSWER == y ] || [ $ANSWER == Y ] || [ $ANSWER == yes ] || [ $ANSWER == Yes ] || [ $ANSWER == YES ]; then
+    true
+  else
+    false
+  fi
+}
+
+# Executes input operations once, then repeats them until the user answers an input prompt with yes.
+# Syntax: untilyes 'echo foo; echo bar'
+#
+function untilyes {
+  eval "$@"
+  while ! isyes; do
+    eval "$@"
+  done
+}
+
+# Executes input operations once, then repeats them until the user answers an input prompt with any response that isn't yes.
+# Syntax: untilno 'echo foo; echo bar'
+#
+function untilno {
+  eval "$@"
+  while isyes; do
+    eval "$@"
+  done
+}
+
+# Takes input in the form of an array, and checks each array item against user input.
+# Returns true if a match is found and false if the response does not exist in the input array.
+# User input is stored in $RESPONSE.
+#
+# Syntax: isvalidresponse "${INPUTARRAY[@]}"
+#
+function isvalidresponse {
+  RESPONSE=NULL
+  read RESPONSE
+  for i in "${@}"; do
+    if echo "$i" | grep $RESPONSE &> /dev/null; then
+      return 0
+    else
+      false
+    fi
+  done
+}
+
+# Executes input from $1 once, then repeats as long as isvalidresponse returns false.
+# syntax: untilvalidresponse 'echo foo; echo bar' "${INPUTARRAY[@]}"
+#
+function untilvalidresponse {
+  eval "$1"
+  until isvalidresponse "${@:2}"; do
+    echo "Invalid!"
+    eval "$1"
+  done
+}
+
+# Tests network connectivity, returning false when the user does not answer yes to retry or after 10 seconds if $1 is --noretry.
+# Returns true if wget is succesful in the beginning or during the 10 second count.
+#
+function nettest {
+  echo "Testing internet connection"
+  until wget -q --spider 172.217.14.227; do
+    COUNT="0"
+    until [ $COUNT == 10 ]; do
+      echo "."
+      sleep 1
+      COUNT=$((COUNT + 1))
+      if wget -q --spider 172.217.14.227; then
+        return 0
+      fi
+    done
+    echo "Network unreachable after 10 seconds!"
+    sleep 0.5
+    if [ "$1" == --noretry ]; then
+      return 1
+    else
+      echo "Retry?"
+      if ! isyes; then
+        return 1
+      fi
+    fi
+  done
+}
+
+# Executes input operations once, then repeats them until nettest passes.
+# Syntax: untilnetpass 'echo foo; echo bar'
+#
+function untilnetpass {
+  eval "$@"
+  until nettest; do
+    eval "$@"
+  done
+}
