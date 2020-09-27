@@ -23,6 +23,8 @@ clone this repository into any directory **on a running Arch Linux installation 
 
 give lemon execute permissions
 
+*(note: the executable lemon, not the lemon folder)*
+
    ``` chmod 755 /path/to/lemon/directory/lemon ```
 
 
