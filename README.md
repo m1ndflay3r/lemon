@@ -25,7 +25,7 @@ If you generate a packagelist from a preexisting system, you will need to manual
 <br/>
 **step 4:** create a servicelist containing every service you would like enabled during installation, **with each service on its own line.**<br/>
 <br/>
-  **eg**<br/>
+  **eg:**<br/>
     cd lemon<br/>
     echo "ssh" >> lists/servicelist<br/>
     echo "lightdm" >> lists/servicelist<br/>
