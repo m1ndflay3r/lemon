@@ -9,7 +9,7 @@ aur packages are not presently supported, but will be coming in the future.<br/>
 -----------------------------------------------------------------------------------------------------------------------------------------------------------<br/>
 <h6>step 1:</h6> 
 clone this repository into any directory **on a running Arch Linux installation ISO** <br/>
-- ```git clone https://github.com/m1ndflay3r/lemon ```
+- ```git clone https://github.com/m1ndflay3r/lemon```
 <br/>
 <br/>
 <h6>step 2:</h6> 
