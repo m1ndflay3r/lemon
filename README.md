@@ -51,10 +51,7 @@ create a servicelist containing every service you would like enabled during inst
 
 edit lemon.conf and adjust any flags you require (things like grub, refind, multilib usage, etc)
 
-Note that there are certain behaviors that interact with eachother, for example disabling root will automatically enable non-root user regardless of its explicit setting.
-
-
-These interactions will only ever serve to make sure a working system is present at the end of the install.
+Note that there are certain behaviors that interact with eachother, for example disabling root will automatically enable non-root user regardless of its explicit setting. These interactions will only ever serve to make sure a working system is present at the end of the install.
 
 
 Full information on each flag and its usage can be found in the comments inside lemon.conf.
