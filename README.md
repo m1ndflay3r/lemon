@@ -3,14 +3,14 @@ bash installer for archlinux<br/>
 <br/>
 <br/>
 <h6>Introduction</h6>
---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------<br/>
 lemon is an installer for Arch Linux that can in theory clone just about any Arch installation (or install a completely fresh one!).<br/>
 pacman can be used to generate a list of all repository packages installed on any given system, which can then be used as a packagelist for lemon.<br/>
 aur packages are not presently supported, but will be coming in the future.<br/>
 <br/>
 <br/>
 <h6>Instructions</h6>
--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------------<br/>
 *step 1:* clone this repository into any directory _on a running Arch Linux installation ISO_ <br/>
     git clone https://github.com/m1ndflay3r/lemon
 <br/>
