@@ -10,7 +10,6 @@ aur packages are not presently supported, but will be coming in the future.
 <h4>Instructions</h4>
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
 
-.
 <h5>step 1:</h5>
 
 clone this repository into any directory **on a running Arch Linux installation ISO**
