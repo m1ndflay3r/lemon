@@ -40,8 +40,11 @@ create a servicelist containing every service you would like enabled during inst
 *eg:*
 
    ``` cd lemon ```
+   
    ``` echo "ssh" >> lists/servicelist ```
+   
    ``` echo "lightdm" >> lists/servicelist ```
+   
    ``` echo "NetworkManager" >> lists/servicelist ```
 
 <h5>step 5:</h5> 
