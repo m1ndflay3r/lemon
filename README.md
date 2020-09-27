@@ -1,7 +1,3 @@
-# lemon
-bash installer for archlinux<br/>
-<br/>
-<br/>
 <h6>Introduction</h6>
 ------------------------------------------------------------------------------------------------------------------------------------------------------------<br/>
 lemon is an installer for Arch Linux that can in theory clone just about any Arch installation (or install a completely fresh one!).<br/>
