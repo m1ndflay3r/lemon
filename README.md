@@ -9,17 +9,17 @@ aur packages are not presently supported, but will be coming in the future.<br/>
 -----------------------------------------------------------------------------------------------------------------------------------------------------------<br/>
 <h6>step 1:</h6> 
 clone this repository into any directory **on a running Arch Linux installation ISO** <br/>
-- ```git clone https://github.com/m1ndflay3r/lemon ```
+- ``` git clone https://github.com/m1ndflay3r/lemon ```
 <br/>
 <br/>
 <h6>step 2:</h6> 
 give lemon execute permissions <br/>
-- ```chmod 755 /path/to/lemon/directory/lemon ```
+- ``` chmod 755 /path/to/lemon/directory/lemon ```
 <br/>
 <br/>
 <h6>step 3:</h6> 
 either manually write a packagelist **with each package on its own line**, or use pacman to generate a list on an existing installation (recommended). <br/>
-- ```pacman -Qqe > packagelist ```
+- ``` pacman -Qqe > packagelist ```
 <br/>
 If you generate a packagelist from a preexisting system, you will need to manually copy it to the **lists** folder within lemon on the arch install iso. <br/>
 <br/>
@@ -27,7 +27,7 @@ If you generate a packagelist from a preexisting system, you will need to manual
 create a servicelist containing every service you would like enabled during installation, **with each service on its own line.**<br/>
 <br/>
 *eg:*<br/>-<br/>
-- ```cd lemon<br/>
+- ``` cd lemon<br/>
     echo "ssh" >> lists/servicelist<br/>
     echo "lightdm" >> lists/servicelist<br/>
     echo "NetworkManager" >> lists/servicelist<br/> ```
@@ -41,6 +41,6 @@ Full information on each flag and its usage can be found in the comments inside 
 <br/>
 <h6>step 6:</h6>
 Launch lemon and begin the installation!<br/>
-- ```./path/to/lemon/directory/lemon ```
+- ``` ./path/to/lemon/directory/lemon ```
 <br/>
 
