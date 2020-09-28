@@ -234,8 +234,10 @@ function INSTALL {
   mkdir hostlvm
   mount -t sysfs sys sys/
   mount -t proc proc proc/
+  mount -t tmpfs tmp tmp/
   mount --rbind /dev dev/
   mount --rbind /run run/
+  mount --rbind /sys/fs/cgroup sys/fs/cgroup/
   mount --bind /run/lvm hostlvm/
   if [ $BOOTMODE == 0 ]; then
     mount --bind /sys/firmware/efi/efivars sys/firmware/efi/efivars/
