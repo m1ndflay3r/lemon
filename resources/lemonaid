@@ -172,6 +172,11 @@ function CONF {
   if [ $ROOT == 1 ] || [ $NONROOTUSER == 0 ]; then
     echo "Enter new root password"
     passwd root
+    cp -r /etc/skel/.bash* /root/
+    echo "PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:$PATH" >> /root/.bashrc
+    if which nano &> /dev/null; then
+      echo "include /usr/share/nano/*.nanorc" > /root/.nanorc
+    fi
   fi
   if [ $NONROOTUSER == 1 ] || [ $ROOT == 0 ]; then
     untilyes '
@@ -196,7 +201,7 @@ function CONF {
     echo "Enter a new password for $USER:"
     passwd $USER
     mkdir -p /home/$USER
-    cp /etc/skel/.bash* /home/$USER
+    cp -r /etc/skel/.bash* /home/$USER
     echo "PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:$PATH" >> /home/$USER/.bashrc
     if which nano &> /dev/null; then
       echo "include /usr/share/nano/*.nanorc" > /home/$USER/.nanorc
