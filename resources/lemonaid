@@ -169,7 +169,7 @@ function CONF {
     echo "Enter new root password"
     passwd root
   fi
-  if [ $NONROOTUSER == 1 ]; then
+  if [ $NONROOTUSER == 1 ] || [ $ROOT == 0 ]; then
     untilyes '
       echo "Enter non-root username:";
       unset USER;
