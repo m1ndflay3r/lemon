@@ -89,8 +89,6 @@ function PREP {
 ## Partitioner. This is currently very basic and arguably insufficient
 ##
 function PARTITION {
-  echo "Time to partition!"
-  echo "."
   untilyes '
     echo "Select target drive from the following.";
     sleep 0.5;
@@ -104,6 +102,36 @@ function PARTITION {
     read DRIVE;
     echo "You have entered $DRIVE. Is this correct? (Y/n)"
   '
+  echo "Create EFI partition on separate physical drive from ROOT partition? (Y/n)"
+  if isyes; then
+    untilyes '
+      fdisk -l;
+      echo "Enter target drive for EFI partition:";
+      read EFIPART;
+      echo "You have entered $EFIPART. Is this correct? (Y/n)"
+    '
+    EFIDIFF="1"
+  fi
+  echo "Create SWAP partition on separate physical drive from ROOT partition? (Y/n)"
+  if isyes; then
+    untilyes '
+      fdisk -l;
+      echo "Enter target drive for SWAP partition:";
+      read SWAPPART;
+      echo "You have entered $SWAPPART. Is this correct? (Y/n)"
+    '
+    SWAPDIFF="1"
+  fi
+  echo "Place /home on separate physical drive from ROOT partition? (Y/n)"
+  if isyes; then
+    untilyes '
+      fdisk -l;
+      echo "Enter target drive for HOME partition:";
+      read HOMEPART;
+      echo "You have entered $HOMEPART. Is this correct? (Y/n)"
+    '
+    HOMEDIFF="1"
+  fi
   if [ $BOOTMODE == 0 ]; then
     echo "Time to partition. You MUST have an EFI and root partition. Swap space is optional."
   else
@@ -114,19 +142,69 @@ function PARTITION {
       exit 1
     fi
   fi
-  sleep 3
+  if [ $EFIDIFF == 1 ] || [ $SWAPDIFF == 1 ] || [ $HOMEDIFF == 1 ]; then
+    echo "fdisk will now execute on $DRIVE (ROOT partition). Press enter to continue."
+    read NULL
+  else
+    sleep 3
+  fi
   untilyes '
     if ! fdisk $DRIVE; then
       echo "Failed to fdisk $DRIVE!";
       exit 1;
     fi;
-    fdisk -l;
+    echo ".";
+    fdisk -l | grep $DRIVE;
+    echo ".";
     echo "Does this look right? (Y/n)"
   '
+  if [ $EFIDIFF == 1 ]; then
+    echo "fdisk will now execute on $EFIPART (EFI partition). Press enter to continue."
+    read NULL
+    untilyes '
+      if ! fdisk $EFIPART; then
+        echo "Failed to fdisk $EFIPART!";
+        exit 1;
+      fi;
+      echo ".";
+      fdisk -l | grep $EFIPART;
+      echo ".";
+      echo "Does this look right? (Y/n)"
+    '
+  fi
+  if [ $SWAPDIFF == 1 ]; then
+    echo "fdisk will now execute on $SWAPPART (SWAP partition). Press enter to continue."
+    read NULL
+    untilyes '
+      if ! fdisk $SWAPPART; then
+        echo "Failed to fdisk $SWAPPART!";
+        exit 1;
+      fi;
+      echo ".";
+      fdisk -l | grep $SWAPPART;
+      echo ".";
+      echo "Does this look right? (Y/n)"
+    '
+  fi
+  if [ $HOMEDIFF == 1 ]; then
+    echo "fdisk will now execute on $HOMEPART (HOME partition). Press enter to continue."
+    read NULL
+    untilyes '
+      if ! fdisk $HOMEPART; then
+        echo "Failed to fdisk $HOMEPART!";
+        exit 1;
+      fi;
+      echo ".";
+      fdisk -l | grep $HOMEPART;
+      echo ".";
+      echo "Does this look right? (Y/n)"
+    '
+  fi
   untilyes '
     unset ROOT;
     unset EFI;
     unset SWAP;
+    unset dHOME;
     echo "Enter root partition:";
     read ROOT;
     if [ $BOOTMODE == 0 ]; then
@@ -135,6 +213,10 @@ function PARTITION {
     fi;
     echo "Enter SWAP partition (leave blank for none):";
     read SWAP;
+    if [ $HOMEDIFF == 1 ]; then
+      echo "Enter HOME partition:";
+      read dHOME;
+    fi;
     echo ".";
     sleep 0.5;
     echo ".";
@@ -153,6 +235,12 @@ function PARTITION {
     echo "----";
     echo $SWAP;
     echo " ";
+    if [ $HOMEDIFF == 1 ]; then
+      echo "HOME";
+      echo "----";
+      echo $dHOME;
+      echo " ";
+    fi;
     echo ".";
     echo " ";
     echo "Does this look right? (Y/n)"
@@ -170,10 +258,16 @@ function PARTITION {
       exit 1
     fi
   fi
+  if [ $HOMEDIFF == 1 ]; then
+    if ! mkfs.ext4 $dHOME; then
+      echo "Formatting HOME partition failed!"
+      exit 1
+    fi
+  fi
   if [ ! -z $SWAP ]; then
     echo "Enabling swap space..."
     if ! mkswap $SWAP; then
-      echo "Formatting swapspace failed!"
+      echo "Formatting SWAP partition failed!"
       exit 1
     fi
     if ! swapon $SWAP; then
@@ -186,7 +280,7 @@ function PARTITION {
   sleep 0.5
   mkdir /tmp/mnt/
   if ! mount $ROOT /tmp/mnt/; then
-    echo "Failed to mount root partition!"
+    echo "Failed to mount ROOT partition!"
     exit 1
   fi
   if [ $BOOTMODE == 0 ]; then
@@ -197,6 +291,13 @@ function PARTITION {
     fi
   else
     mkdir /tmp/mnt/boot
+  fi
+  if [ $HOMEDIFF == 1 ]; then
+    mkdir -p /tmp/mnt/home
+    if ! mount $dHOME /tmp/mnt/home; then
+      echo "Failed to mount HOME partition!"
+      exit 1
+    fi
   fi
   echo "Do you have any additional partitions / mount points to set up? (Y/n)"
   if isyes; then
