@@ -169,7 +169,7 @@ function CONF {
   echo "127.0.0.1     localhost" >> /etc/hosts
   echo "::1           localhost" >> /etc/hosts
   echo "127.0.1.1     $HOSTNAME.localdomain $HOSTNAME" >> /etc/hosts
-  if [ $ROOT == 1 ] || [ $NONROOTUSER == 0 ]; then
+  if [ $ROOT == 1 ] || [ $NONROOTUSER == 0 ] || [ $SUDO == 0 ]; then
     echo "Enter new root password"
     passwd root
     cp -r /etc/skel/.bash* /root/
@@ -187,7 +187,7 @@ function CONF {
     '
     useradd $USER
     usermod -a -G wheel $USER
-    if [ $SUDO == 1 ]; then
+    if [ $SUDO == 1 ] || [ $ROOT == 0 ]; then
       if ! pacman -Ql sudo &> /dev/null; then
         if ! pacman -S --noconfirm --needed sudo &> /dev/null; then
           echo "Failed to fetch sudo!" >> /tmp/lemonaid.log
