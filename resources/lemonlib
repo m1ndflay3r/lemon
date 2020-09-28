@@ -2,7 +2,6 @@
 
 # Promps for input, returns true if response is a variant of yes and returns false if it isn't.
 function isyes {
-  unset ANSWER
   read ANSWER
   if [ $ANSWER == y ] || [ $ANSWER == Y ] || [ $ANSWER == yes ] || [ $ANSWER == Yes ] || [ $ANSWER == YES ]; then
     true
