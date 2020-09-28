@@ -198,7 +198,11 @@ function CONF {
     echo "Process completed sucessfuly, but errors were detected"
     echo "Would you like to read the error log (Y/n)?"
     if isyes; then
-      nano $LOG
+      if which nano &> /dev/null; then
+        nano $LOG
+      else
+        vi $LOG
+      fi
       echo "."
     fi
   fi
