@@ -198,7 +198,7 @@ function CONF {
   LOG=/tmp/lemonaid.log
   if [ -f "$LOG" ]; then
     echo "Process completed sucessfuly, but errors were detected"
-    echo "Would you like to read the error log (Y/n)?"
+    echo "Would you like to read the error log? (Y/n)"
     if isyes; then
       if which nano &> /dev/null; then
         nano $LOG
