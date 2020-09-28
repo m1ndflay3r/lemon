@@ -60,7 +60,7 @@ function PREP {
       exit 1
     fi
   else
-    reflector --verbose --latest 50 --sort rate --save /etc/pacman.d/mirrorlist
+    reflector --latest 50 --protocol http --protocol https --sort rate --save /etc/pacman.d/mirrorlist
   fi
   echo "."
   echo "Detecting bootmode..."
