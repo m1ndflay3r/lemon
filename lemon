@@ -47,10 +47,6 @@ function PREP {
     '
   fi
   echo "Sorting mirrors..."
-  if [ $MULTILIB == 1 ]; then
-    echo "[multilib]" >> /etc/pacman.conf
-    echo "Include = /etc/pacman.d/mirrorlist" >> /etc/pacman.conf
-  fi
   if ! pacman -Sy; then
     echo "Failed to sync pacman! Check your internet settings, then restart lemon"
     exit 1
