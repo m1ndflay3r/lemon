@@ -189,7 +189,9 @@ function CONF {
     mkdir -p /home/$USER
     cp /etc/skel/.bash* /home/$USER
     echo "PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:$PATH" >> /home/$USER/.bashrc
-    echo "include /usr/share/nano/*.nanorc" > /home/$USER/.nanorc
+    if which nano &> /dev/null; then
+      echo "include /usr/share/nano/*.nanorc" > /home/$USER/.nanorc
+    fi
     chown $USER:$USER /home/$USER
     chown $USER:$USER /home/$USER/.*
   fi
