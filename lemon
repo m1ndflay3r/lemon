@@ -65,10 +65,8 @@ function PREP {
   echo "."
   echo "Detecting bootmode..."
   if ls -a /sys/firmware/efi/efivars &> /dev/null; then
-    unset BOOTMODE
     BOOTMODE="0"
   else
-    unset BOOTMODE
     BOOTMODE="1"
   fi
   if [ $CUSTOM_KEYMAP == 1 ]; then
