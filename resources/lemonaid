@@ -79,14 +79,18 @@ function BOOT {
       if ! grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB; then
         echo "Grub install failed! (EFI)" >> /tmp/lemonaid.log
       else
-        grub-mkconfig -o /boot/grub/grub.cfg
+        if ! grub-mkconfig -o /boot/grub/grub.cfg; then
+          echo "Grub installed successfully, but creation of grub.cfg failed!" >> /tmp/lemonaid.log
+        fi
       fi
     fi
     if [ $BOOTMODE == 1 ]; then
       if ! grub-install --target=i386-pc "$GRUBDRIVE"; then
         echo "Grub install failed! (BIOS)" >> /tmp/lemonaid.log
       else
-        grub-mkconfig -o /boot/grub/grub.cfg
+        if ! grub-mkconfig -o /boot/grub/grub.cfg; then
+          echo "Grub installed successfully, but creation of grub.cfg failed!" >> /tmp/lemonaid.log
+        fi
       fi
     fi
   else
@@ -180,9 +184,14 @@ function CONF {
     usermod -a -G wheel $USER
     if [ $SUDO == 1 ]; then
       if ! pacman -Ql sudo &> /dev/null; then
-        pacman -S --noconfirm --needed sudo &> /dev/null
+        if ! pacman -S --noconfirm --needed sudo &> /dev/null; then
+          echo "Failed to fetch sudo!" >> /tmp/lemonaid.log
+          SUDOERR="1"
+        fi
       fi
-      echo "$USER ALL=(ALL:ALL) ALL" >> /etc/sudoers
+      if [ ! $SUDOERR == 1 ]; then
+        echo "$USER ALL=(ALL:ALL) ALL" >> /etc/sudoers
+      fi
     fi
     echo "Enter a new password for $USER:"
     passwd $USER
