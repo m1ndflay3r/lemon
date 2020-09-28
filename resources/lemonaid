@@ -60,7 +60,7 @@ function MAIN {
       fi
     done
     if [ $SERVICEERRORS == 1 ]; then
-      echo "Service list complete, but some services failed to enable properly."
+      echo "Servicelist complete, but some services failed to enable properly."
       echo "Offending services are listed in /tmp/lemonaid.log"
     fi
   fi
