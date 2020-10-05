@@ -111,6 +111,8 @@ function PARTITION {
       echo "You have entered $EFIPART. Is this correct? (Y/n)"
     '
     EFIDIFF="1"
+  else
+    EFIDIFF="0"
   fi
   echo "Create SWAP partition on separate physical drive from ROOT partition? (Y/n)"
   if isyes; then
@@ -121,6 +123,8 @@ function PARTITION {
       echo "You have entered $SWAPPART. Is this correct? (Y/n)"
     '
     SWAPDIFF="1"
+  else
+    SWAPDIFF="0"
   fi
   echo "Place /home on separate physical drive from ROOT partition? (Y/n)"
   if isyes; then
@@ -131,6 +135,8 @@ function PARTITION {
       echo "You have entered $HOMEPART. Is this correct? (Y/n)"
     '
     HOMEDIFF="1"
+  else
+    HOMEDIFF="0"
   fi
   if [ $BOOTMODE == 0 ]; then
     echo "Time to partition. You MUST have an EFI and root partition. Swap space is optional."
