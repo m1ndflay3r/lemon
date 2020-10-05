@@ -32,6 +32,7 @@ echo "- - - - - - - - - - - - - - - -"
 
 source "${BASH_SOURCE%/*}/lemon.conf"
 source "${BASH_SOURCE%/*}/resources/lemonlib"
+STARTDIR=$(pwd)
 
 
 
@@ -336,7 +337,7 @@ function INSTALL {
   mv etc/resolv.conf etc/resolv.conf.bak
   cp /etc/resolv.conf etc/
   mkdir etc/lemon
-  cp -r ${BASH_SOURCE%/*}/* etc/lemon/
+  cp -r $STARTDIR/${BASH_SOURCE%/*}/* etc/lemon/
   chmod 755 etc/lemon/resources/lemonaid
   mkdir hostlvm
   mount -t sysfs sys sys/
