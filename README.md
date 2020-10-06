@@ -73,7 +73,7 @@ Launch lemon and begin the installation!
    ``` ./path/to/lemon/directory/lemon ```
 
 
-
+.
 
 
 *Note: Only vanilla Arch Linux is officially supported. while this may work with arch-based distros such as manjaro, this is not officially supported (and will definitely require tweaking lemon.conf to prevent breakage). Your mileage may vary.*
