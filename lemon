@@ -326,10 +326,6 @@ function INSTALL {
     echo "pacstrap base system failed!"
     exit 1
   fi
-  if [ $BOOTMODE == 1 ]; then
-    echo "GRUBDRIVE=$DRIVE" >> /tmp/mnt/tmp/info.lemon
-  fi
-  echo "BOOTMODE=$BOOTMODE" >> /tmp/mnt/tmp/info.lemon
   genfstab -U /tmp/mnt >> /tmp/mnt/etc/fstab
   if [ $KEYSET == 1 ]; then
     echo "KEYMAP=$LAYOUT" >> etc/vconsole.conf
@@ -347,9 +343,13 @@ function INSTALL {
   mount --rbind /run run/
   mount --rbind /sys/fs/cgroup sys/fs/cgroup/
   mount --bind /run/lvm hostlvm/
+  if [ $BOOTMODE == 1 ]; then
+    echo "GRUBDRIVE=$DRIVE" >> tmp/info.lemon
+  fi
   if [ $BOOTMODE == 0 ]; then
     mount --bind /sys/firmware/efi/efivars sys/firmware/efi/efivars/
   fi
+  echo "BOOTMODE=$BOOTMODE" >> tmp/info.lemon
   echo "Entering chroot"
   COUNT=0
   until [ $COUNT == 3 ]; do
