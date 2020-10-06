@@ -188,13 +188,14 @@ function CONF {
     useradd $USER
     usermod -a -G wheel $USER
     if [ $SUDO == 1 ] || [ $ROOT == 0 ]; then
+      SUDOERR="0"
       if ! pacman -Ql sudo &> /dev/null; then
         if ! pacman -S --noconfirm --needed sudo &> /dev/null; then
           echo "Failed to fetch sudo!" >> /tmp/lemonaid.log
           SUDOERR="1"
         fi
       fi
-      if [ ! $SUDOERR == 1 ]; then
+      if [ $SUDOERR == 0 ]; then
         echo "$USER ALL=(ALL:ALL) ALL" >> /etc/sudoers
       fi
     fi
