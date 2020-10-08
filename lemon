@@ -345,8 +345,7 @@ function INSTALL {
   mount --bind /run/lvm hostlvm/
   if [ $BOOTMODE == 1 ]; then
     echo "GRUBDRIVE=$DRIVE" >> tmp/info.lemon
-  fi
-  if [ $BOOTMODE == 0 ]; then
+  else
     mount --bind /sys/firmware/efi/efivars sys/firmware/efi/efivars/
   fi
   echo "BOOTMODE=$BOOTMODE" >> tmp/info.lemon
