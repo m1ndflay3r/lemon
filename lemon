@@ -87,7 +87,7 @@ function PREP {
 }
 
 ##
-## Partitioner. This is currently very basic and arguably insufficient
+## Partitioner. This is currently kind of a mess and arguably insufficient
 ##
 function PARTITION {
   untilyes '
