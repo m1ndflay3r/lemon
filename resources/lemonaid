@@ -64,6 +64,11 @@ function MAIN {
       echo "Offending services are listed in /tmp/lemonaid.log"
     fi
   fi
+  if ! which nano &> /dev/null; then
+    if ! which vim &> /dev/null; then
+      pacman -S --noconfirm vim &> /dev/null
+    fi
+  fi
 }
 
 # Boot configuration.
@@ -218,7 +223,7 @@ function CONF {
       if which nano &> /dev/null; then
         nano $LOG
       else
-        vi $LOG
+        vim $LOG
       fi
       echo "."
     fi
