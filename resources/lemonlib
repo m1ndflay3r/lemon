@@ -116,7 +116,7 @@ function aurinst {
       if which nano &> /dev/null; then
         nano ./PKGBUILD
       else
-        vi ./PKGBUILD
+        vim ./PKGBUILD
       fi
     fi
     if ! (makepkg -cs); then
