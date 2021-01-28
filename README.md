@@ -5,7 +5,7 @@
 
 pacman can be used to generate a list of all repository packages installed on any given system, which can then be used as a packagelist for lemon.
 
-experimental AUR package support has been added, but (though it should work just fine) it's not thoroughly tested - thusly it has been labelled experimental and disabled by default. 
+experimental AUR package support has been added - though it should work just fine, it's not thoroughly tested - thusly it has been labelled experimental and disabled by default. 
 
 <h4>Instructions</h4>
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
