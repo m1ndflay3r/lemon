@@ -78,7 +78,7 @@ function MAIN {
     cp /etc/sudoers /etc/sudoers.bak
     echo "aur ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
     echo 'PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:$PATH;
-          AURPACKAGES=$(cat /etc/lemon/lists/aurpackagelist);
+          AURPACKAGES=$(cat /etc/lemon/lists/aurpackagelist*);
           source /etc/lemon/resources/lemonlib;
           for i in $AURPACKAGES; do
             (aurinst $i);
