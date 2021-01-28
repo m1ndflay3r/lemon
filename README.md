@@ -84,7 +84,9 @@ To use this feature, create the file *aurpackagelist* in the same format as a re
 *eg:*
 
    ``` cd /path/to/lemon/directory/ ```
+   
    ``` echo "stress-ng" >> lists/aurpackagelist ```
+   
    ``` echo "wine-staging-git" >> lists/aurpackagelist ```
    
 
