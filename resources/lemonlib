@@ -96,3 +96,37 @@ function untilnetpass {
     eval "$@"
   done
 }
+
+# AUR package installation logic
+# Ideally this should be run in a subshell to prevent bizzare behavior if makepkg fails.
+#
+function aurinst {
+  mkdir $HOME/.aurtool
+  cd $HOME/.aurtool
+  git clone http://aur.archlinux.org/$@.git
+  cd $@
+  PKGB=./PKGBUILD
+  if [ ! -f $PKGB ]; then
+    echo "ERROR: Package $@ does not exist!"
+    sudo echo "Failed AUR package: $@ (invalid package name)" >> /tmp/lemonaid.log
+    exit 1
+  else
+    echo "Would you like to edit the PKGBUILD? (Y/n)"
+    if isyes; then
+      if which nano &> /dev/null; then
+        nano ./PKGBUILD
+      else
+        vi ./PKGBUILD
+      fi
+    fi
+    if ! (makepkg -cs); then
+      echo "ERROR: Package $@ failed to build!"
+      sudo echo "Failed AUR package: $@ (build failure)" >> /tmp/lemonaid.log
+      exit 1
+    else
+      sudo pacman -U --noconfirm *.pkg.tar*
+    fi
+    rm -rf $HOME/.aurtool
+    exit 0
+  fi
+}
