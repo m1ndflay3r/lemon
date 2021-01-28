@@ -69,6 +69,44 @@ function MAIN {
       pacman -S --noconfirm vim &> /dev/null
     fi
   fi
+  if [ $AURPACKAGELIST == 1 ]; then
+    pacman -S --noconfirm base-devel git &> /dev/null
+    useradd aur
+    mkdir /home/aur
+    cp /etc/skel/.bash* /home/aur/
+    chown -R aur:aur /home/aur
+    cp /etc/sudoers /etc/sudoers.bak
+    echo "aur ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+    echo 'PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:$PATH;
+          AURPACKAGES=$(cat /etc/lemon/lists/aurpackagelist);
+          source /etc/lemon/resources/lemonlib;
+          for i in $AURPACKAGES; do
+            (aurinst $i);
+          done;
+          echo "Install aurtool? (for aur package management post-install)";
+          if isyes; then
+            if ! aurinst package-query; then
+              echo "Failed to install aurtool: package-query failed! (aurtool dependency)";
+              echo "aurtool failed: package-query failed to install" >> /tmp/lemonaid.log;
+            else
+              cd $HOME;
+              git clone http://github.com/m1ndflay3r/aurtool;
+              sudo mv aurtool/aurtool /bin/;
+              sudo chmod 755 /bin/aurtool;
+            fi;
+          fi;
+          exit
+         ' >> /home/aur/.bashrc
+    su aur
+    rm -rf /etc/sudoers
+    mv /etc/sudoers.bak /etc/sudoers
+    rm -rf /home/aur
+    userdel aur
+    if cat /tmp/lemonaid.log | grep AUR &> /dev/null; then
+      echo "Aurpackagelist installation complete, but errors were detected."
+      echo "Offending AUR packages are listed in /tmp/lemonaid.log"
+    fi
+  fi
 }
 
 # Boot configuration.
