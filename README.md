@@ -1,11 +1,11 @@
 <h4>Introduction</h4>
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-*lemon* is an installer for Arch Linux that can in theory clone just about any Arch installation (or install a completely fresh one!).
+*lemon* is an installer for Arch Linux that can in theory clone just about any Arch installation (or install a completely fresh one!). Note that at present only ext4 filesystems are supported for ROOT partition. This will be remedied in future updates.
 
 pacman can be used to generate a list of all repository packages installed on any given system, which can then be used as a packagelist for lemon.
 
-aur packages are not presently supported, but will be coming in the future.
+experimental AUR package support has been added, but (though it should work just fine) it's not thoroughly tested - thusly it has been labelled experimental and disabled by default. 
 
 <h4>Instructions</h4>
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -32,7 +32,7 @@ give lemon execute permissions
 
 either manually write a packagelist **with each package on its own line**, or use pacman to generate a list on an existing installation (recommended).
 
-   ``` pacman -Qqe > packagelist ```
+   ``` pacman -Qqe > /path/to/lemon/directory/lists/packagelist ```
 
 If you generate a packagelist from a preexisting system, you will need to manually copy it to the **lists** folder within lemon on the arch install iso.
 
@@ -45,7 +45,7 @@ create a servicelist containing every service you would like enabled during inst
 
 *eg:*
 
-   ``` cd lemon ```
+   ``` cd /path/to/lemon/directory ```
    
    ``` echo "ssh" >> lists/servicelist ```
    
@@ -71,6 +71,22 @@ Full information on each flag and its usage can be found in the comments inside 
 Launch lemon and begin the installation!
 
    ``` ./path/to/lemon/directory/lemon ```
+
+
+.
+<h4>*Optional: AUR packages*</h4>
+
+Experimental AUR package support exists, and can be enabled via the AURPACKAGELIST flag in lemon.conf.
+
+To use this feature, create the file *aurpackagelist* in the same format as a regular package list (but using aur packages, obviously).
+
+
+*eg:*
+
+   ``` cd /path/to/lemon/directory/ ```
+   ``` echo "stress-ng" >> lists/aurpackagelist ```
+   ``` echo "wine-staging-git" >> lists/aurpackagelist ```
+   
 
 
 .
