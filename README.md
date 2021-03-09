@@ -1,7 +1,7 @@
 <h4>Introduction</h4>
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-*lemon* is an installer for Arch Linux that can in theory clone just about any Arch installation (or install a completely fresh one!). Note that at present only ext4 filesystems are supported for ROOT partition. This will be remedied in future updates.
+*lemon* is an installer for Arch Linux that can in theory clone just about any Arch installation (or install a completely fresh one!). Note: there are a couple of caveats at present - namely, only EXT4 is supported for root partition, and only systemd can be used for your init system. Both of these will be remedied in future updates.
 
 pacman can be used to generate a list of all repository packages installed on any given system, which can then be used as a packagelist for lemon.
 
