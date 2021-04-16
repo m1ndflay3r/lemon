@@ -109,7 +109,7 @@ function aurinst {
   if [ ! -f $PKGB ]; then
     echo "ERROR: Package $@ does not exist!"
     sudo echo "Failed AUR package: $@ (invalid package name)" >> /tmp/lemonaid.log
-    exit 1
+    return 1
   else
     echo "Would you like to edit the PKGBUILD? (Y/n)"
     if isyes; then
@@ -122,11 +122,11 @@ function aurinst {
     if ! (makepkg -cs); then
       echo "ERROR: Package $@ failed to build!"
       sudo echo "Failed AUR package: $@ (build failure)" >> /tmp/lemonaid.log
-      exit 1
+      return 1
     else
       sudo pacman -U --noconfirm *.pkg.tar*
     fi
     rm -rf $HOME/.aurtool
-    exit 0
+    return 0
   fi
 }
