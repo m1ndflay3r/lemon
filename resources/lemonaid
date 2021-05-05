@@ -141,7 +141,9 @@ function BOOT {
     ln -s /hostlvm /run/lvm
   fi
   if [ $REFIND == 1 ] && [ $BOOTMODE == 0 ]; then
-    pacman -S --needed --noconfirm refind-efi
+    if ! pacman -S --needed --noconfirm refind; then
+      echo "Failed to fetch refind!" >> /tmp/lemonaid.log
+    fi
     if ! refind-install; then
       echo "Refind install failed!" >> /tmp/lemonaid.log
     fi
