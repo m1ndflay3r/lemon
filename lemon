@@ -47,7 +47,7 @@ function PREP {
       bash --login -i
     '
   fi
-  echo "Sorting mirrors..."
+  echo "Syncing pacman..."
   if ! pacman -Sy; then
     echo "Failed to sync pacman! Check your internet settings, then restart lemon"
     exit 1
