@@ -64,13 +64,13 @@ function untilvalidresponse {
 #
 function nettest {
   echo "Testing internet connection"
-  until wget -q --spider 172.217.14.227; do
+  until ping 8.8.8.8 -c 1 &> /dev/null; do
     COUNT="0"
     until [ $COUNT == 10 ]; do
       echo "."
       sleep 1
       COUNT=$((COUNT + 1))
-      if wget -q --spider 172.217.14.227; then
+      if ping 8.8.8.8 -c 1 &> /dev/null; then
         return 0
       fi
     done
