@@ -61,6 +61,8 @@ function PREP {
       exit 1
     fi
   else
+    echo "Sorting mirrors with reflector."
+    echo "This may take a while. Please wait." 
     reflector --latest 50 --protocol http --protocol https --sort rate --save /etc/pacman.d/mirrorlist
   fi
   echo "."
