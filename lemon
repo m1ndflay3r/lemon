@@ -125,7 +125,7 @@ until [ $RESPONSE == 5 ] && [ $ROOTSET == 1 ]; do
       read DRIVE;
       echo "You have entered $DRIVE. Is this correct? (Y/n)"
     '
-    ROOTSET=1
+    ROOTSET="1"
   fi
   if [ $RESPONSE == 2 ]; then
     untilyes '
