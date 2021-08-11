@@ -42,6 +42,10 @@ function MAIN {
     for i in $PKGS; do
       if ! pacman -S --needed --noconfirm $i; then
         echo "Failed package: $i" >> /tmp/lemonaid.log
+        if [ $RETRYASAUR == 1 ] && [ $AURPACKAGELIST == 1 ]; then
+          echo "Package will be retried as AUR." >> /tmp/lemonaid.log
+          echo "$i" >> /etc/lemon/lists/aurpackagelistfailed
+        fi
         PACMANERRORS="1"
       fi
     done
