@@ -1,12 +1,15 @@
 <h4>Introduction</h4>
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-*lemon* is an installer for Arch Linux that aims to be able to clone just about any Arch installation (or install a completely fresh one!). Both ext4 and btrfs are supported at present, and a sensible btrfs subvolume configuration is included. Note: at present, you can only use systemd for your init system. This will be remedied in a future update. 
+*lemon* is an installer for Arch Linux that aims to be able to clone just about any Arch installation (or install a completely fresh one!). 
+
+Both ext4 and btrfs are supported at present, and a sensible btrfs subvolume configuration is included. 
 
 pacman can be used to generate a list of all repository packages installed on any given system, which can then be used as a packagelist for lemon.
 
 experimental AUR package support has been added. Though it should work just fine, it's not thoroughly tested - thusly it has been labelled experimental and disabled by default. 
 
+Note: at present, you can only use systemd for your init system. This will be remedied in a future update. 
 <h4>Instructions</h4>
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
 
