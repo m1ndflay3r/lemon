@@ -77,7 +77,7 @@ Launch lemon and begin the installation!
 .
 <h4><i>Optional: AUR packages</i></h4>
 
-Experimental AUR package support exists, and can be enabled via the AURPACKAGELIST flag in lemon.conf.
+AUR package support exists, and can be enabled via the AURPACKAGELIST flag in lemon.conf.
 
 To use this feature, create the file *aurpackagelist* in the same format as a regular package list (but using aur packages, obviously).
 
