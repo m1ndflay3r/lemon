@@ -276,9 +276,25 @@ done
   echo "Formatting..."
   echo "."
   sleep 0.5
-  if ! mkfs.ext4 $ROOT; then
-    echo "Formatting root partition failed!"
-    exit 1
+  if [ $USEBTRFS == 1 ]; then
+    if ! mkfs.btrfs $ROOT; then
+      echo "Formatting root partition failed!"
+      exit 1
+    else
+      mount $ROOT /mnt
+      cd /mnt
+      btrfs subvolume create _active
+      btrfs subvolume create _active/rootvol
+      btrfs subvolume create _active/homevol
+      btrfs subvolume create _snapshots
+      cd ..
+      umount /mnt
+    fi
+  else    
+    if ! mkfs.ext4 $ROOT; then
+      echo "Formatting root partition failed!"
+      exit 1
+    fi
   fi
   if [ $BOOTMODE == 0 ]; then
     if ! mkfs.vfat $EFI; then
@@ -307,9 +323,26 @@ done
   echo "Mounting..."
   sleep 0.5
   mkdir /tmp/mnt/
-  if ! mount $ROOT /tmp/mnt/; then
-    echo "Failed to mount ROOT partition!"
-    exit 1
+  if [ $USEBTRFS == 1 ]; then
+    if ! mount -o subvol=_active/rootvol $ROOT /tmp/mnt/; then
+      echo "Failed to mount ROOT partition!"
+      exit 1
+    fi
+    mkdir /tmp/mnt/home
+    mkdir -p /tmp/mnt/mnt/defvol
+    if ! mount -o subvol=_active/homevol $ROOT /tmp/mnt/home; then
+      echo "Failed to mount ROOT partition!"
+      exit 1
+    fi
+    if ! mount -o subvol=/ $ROOT /tmp/mnt/mnt/defvol; then
+      echo "Failed to mount ROOT partition!"
+      exit 1
+    fi
+  else
+    if ! mount $ROOT /tmp/mnt/; then
+      echo "Failed to mount ROOT partition!"
+      exit 1
+    fi
   fi
   if [ $BOOTMODE == 0 ]; then
     mkdir -p /tmp/mnt/boot/efi
@@ -343,9 +376,16 @@ function INSTALL {
   echo "Installing the base system..."
   sleep 0.5
   cd /tmp/mnt/
-  if ! pacstrap . base; then
-    echo "pacstrap base system failed!"
-    exit 1
+  if [ $USEBTRFS == 1 ]; then
+    if ! pacstrap . base btrfs-progs; then
+      echo "pacstrap base system failed!"
+      exit 1
+    fi
+  else
+    if ! pacstrap . base; then
+      echo "pacstrap base system failed!"
+      exit 1
+    fi
   fi
   genfstab -U /tmp/mnt >> /tmp/mnt/etc/fstab
   if [ $KEYSET == 1 ]; then
