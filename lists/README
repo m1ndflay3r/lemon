@@ -1,6 +1,6 @@
 packagelists, aurpackagelists, and servicelists go here. You may use as many lists as you want, so long as their name begins with packagelist / aurpackagelist / servicelist (eg: packagelist1, packagelist2, etc).
 
-packagelists can be generated via the following command: "pacman -Qqe > /path/to/packagelist" (without quotes).
+packagelists can be generated via the following command: "pacman -Qqe | cut -d " " -f1 > /path/to/packagelist" (without quotes).
 
 aurpackagelists should be created manually, as the names used by the installer are based on a packages github repository name.
 
