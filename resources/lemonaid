@@ -43,7 +43,7 @@ function MAIN {
       if ! pacman -S --needed --noconfirm $i; then
         echo "Failed package: $i" >> /tmp/lemonaid.log
         if [ $RETRYASAUR == 1 ] && [ $AURPACKAGELIST == 1 ]; then
-          echo "Package will be retried as AUR." >> /tmp/lemonaid.log
+          echo "Package will be retried as Arch User Repository package." >> /tmp/lemonaid.log
           echo "$i" >> /etc/lemon/lists/aurpackagelistfailed
         fi
         PACMANERRORS="1"
