@@ -92,74 +92,74 @@ function PREP {
 ## Partitioner. This is becoming less of a mess but still arguably insufficient
 ##
 function PARTITION {
-EFIDIFF="0"
-SWAPDIFF="0"
-HOMEDIFF="0"
-RESPONSE="0"
-ROOTSET="0"
-until [ $RESPONSE == 5 ] && [ $ROOTSET == 1 ]; do
-  PVALID=("1" "2" "3" "4" "5")
-  untilvalidresponse '
-    echo "                 Drive Setup";
-    echo "                 -----------";
-    echo "Choose a menu option to proceed with disk setup.";
-    echo "When you are finished, hit finish to continue the installation.";
-    echo "...................................................................";
-    echo "1: Set ROOT partition target drive";
-    echo "2: Set  EFI partition target drive (optional)";
-    echo "3: Set SWAP partition target drive (optional)";
-    echo "4: Set HOME partition target drive (optional)";
-    echo "5: Finish"
-  ' "${PVALID[@]}"
-  if [ $RESPONSE == 1 ]; then
-    untilyes '
-      echo "Select target drive from the following.";
-      sleep 0.5;
-      echo ".";
-      sleep 0.5;
-      echo ".";
-      sleep 0.5;
-      fdisk -l;
-      sleep 0.5;
-      echo "Target drive:";
-      read DRIVE;
-      echo "You have entered $DRIVE. Is this correct? (Y/n)"
-    '
-    ROOTSET="1"
-  fi
-  if [ $RESPONSE == 2 ]; then
-    untilyes '
-      fdisk -l;
-      echo "Enter target drive for EFI partition:";
-      read EFIPART;
-      echo "You have entered $EFIPART. Is this correct? (Y/n)"
-    '
-    EFIDIFF="1"
-  fi
-  if [ $RESPONSE == 3 ]; then
-    untilyes '
-      fdisk -l;
-      echo "Enter target drive for SWAP partition:";
-      read SWAPPART;
-      echo "You have entered $SWAPPART. Is this correct? (Y/n)"
-    '
-    SWAPDIFF="1"
-  fi
-  if [ $RESPONSE == 4 ]; then
-    untilyes '
-      fdisk -l;
-      echo "Enter target drive for HOME partition:";
-      read HOMEPART;
-      echo "You have entered $HOMEPART. Is this correct? (Y/n)"
-    '
-    HOMEDIFF="1"
-  fi
-  if [ $RESPONSE == 5 ] && [ ! $ROOTSET == 1 ]; then
-    echo "Must set root target drive!"
-    RESPONSE="0"
-    sleep 1
-  fi
-done
+  EFIDIFF="0"
+  SWAPDIFF="0"
+  HOMEDIFF="0"
+  RESPONSE="0"
+  ROOTSET="0"
+  until [ $RESPONSE == 5 ] && [ $ROOTSET == 1 ]; do
+    PVALID=("1" "2" "3" "4" "5")
+    untilvalidresponse '
+      echo "                 Drive Setup";
+      echo "                 -----------";
+      echo "Choose a menu option to proceed with disk setup.";
+      echo "When you are finished, hit finish to continue the installation.";
+      echo "...................................................................";
+      echo "1: Set ROOT partition target drive";
+      echo "2: Set  EFI partition target drive (optional)";
+      echo "3: Set SWAP partition target drive (optional)";
+      echo "4: Set HOME partition target drive (optional)";
+      echo "5: Finish"
+    ' "${PVALID[@]}"
+    if [ $RESPONSE == 1 ]; then
+      untilyes '
+        echo "Select target drive from the following.";
+        sleep 0.5;
+        echo ".";
+        sleep 0.5;
+        echo ".";
+        sleep 0.5;
+        fdisk -l;
+        sleep 0.5;
+        echo "Target drive:";
+        read DRIVE;
+        echo "You have entered $DRIVE. Is this correct? (Y/n)"
+      '
+      ROOTSET="1"
+    fi
+    if [ $RESPONSE == 2 ]; then
+      untilyes '
+        fdisk -l;
+        echo "Enter target drive for EFI partition:";
+        read EFIPART;
+        echo "You have entered $EFIPART. Is this correct? (Y/n)"
+      '
+      EFIDIFF="1"
+    fi
+    if [ $RESPONSE == 3 ]; then
+      untilyes '
+        fdisk -l;
+        echo "Enter target drive for SWAP partition:";
+        read SWAPPART;
+        echo "You have entered $SWAPPART. Is this correct? (Y/n)"
+      '
+      SWAPDIFF="1"
+    fi
+    if [ $RESPONSE == 4 ]; then
+      untilyes '
+        fdisk -l;
+        echo "Enter target drive for HOME partition:";
+        read HOMEPART;
+        echo "You have entered $HOMEPART. Is this correct? (Y/n)"
+      '
+      HOMEDIFF="1"
+    fi
+    if [ $RESPONSE == 5 ] && [ ! $ROOTSET == 1 ]; then
+      echo "Must set root target drive!"
+      RESPONSE="0"
+      sleep 1
+    fi
+  done
   if [ $BOOTMODE == 0 ]; then
     echo "Time to partition. You MUST have an EFI and root partition. Swap space is optional."
   else
