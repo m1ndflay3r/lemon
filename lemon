@@ -65,6 +65,10 @@ function PREP {
     echo "Sorting mirrors with reflector."
     echo "This may take a while. Please wait." 
     reflector --latest 50 --protocol http --protocol https --sort rate --save /etc/pacman.d/mirrorlist
+    echo "Resyncing pacman with updated mirrorlist"
+    if ! pacman -Sy; then
+      echo "Failed to resync pacman after reflector sorting! Check your mirrorlist"
+    fi
   fi
   echo "."
   echo "Detecting bootmode..."
