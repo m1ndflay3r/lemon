@@ -38,6 +38,9 @@ either manually write a packagelist **with each package on its own line**, or us
 If you generate a packagelist from a preexisting system, you will need to manually copy it to the **lists** folder within lemon on the arch install iso.
 
 
+Note: If you have any AUR packages installed, they will be added to the auto-generated list as well. In this case, it is highly recommended to enable both AURPACKAGELIST and RETRYASAUR in lemon.conf. 
+
+
 .
 <h5>step 4:</h5> 
 
