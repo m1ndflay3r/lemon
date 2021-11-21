@@ -53,6 +53,7 @@ function PREP {
     exit 1
   fi
   echo "."
+  echo "Fetching reflector..."
   if ! pacman -S --needed --noconfirm reflector &> /dev/null; then
     echo "Failed to fetch reflector! Mirrorlist will be unmodified from the one shipped with the live ISO"
     echo "Continue anyway? (Y/n)"
