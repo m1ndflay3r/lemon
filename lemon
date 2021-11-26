@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #        Lemon        #
-#      V.1.2 beta     #
+#      V.1.0 RC1     #
 #---------------------
 # Maintainer: Eris Nihila (M1ndFlay3r)
 #             sp0t1fyfr33tr1alabus3@outlook.com
@@ -53,21 +53,23 @@ function PREP {
     exit 1
   fi
   echo "."
-  echo "Fetching reflector..."
-  if ! pacman -S --needed --noconfirm reflector &> /dev/null; then
-    echo "Failed to fetch reflector! Mirrorlist will be unmodified from the one shipped with the live ISO"
-    echo "Continue anyway? (Y/n)"
-    if ! isyes; then
-      echo "Abort"
-      exit 1
-    fi
-  else
-    echo "Sorting mirrors with reflector."
-    echo "This may take a while. Please wait." 
-    reflector --latest 50 --protocol http --protocol https --sort rate --save /etc/pacman.d/mirrorlist
-    echo "Resyncing pacman with updated mirrorlist"
-    if ! pacman -Sy; then
-      echo "Failed to resync pacman after reflector sorting! Check your mirrorlist"
+  if [ ! $NOREFLECTOR == 1 ]; then
+    echo "Fetching reflector..."
+    if ! pacman -S --needed --noconfirm reflector &> /dev/null; then
+      echo "Failed to fetch reflector! Mirrorlist will be unmodified from the one shipped with the live ISO"
+      if ! isyes "Continue anyway? (Y/n)"; then
+        echo "Abort"
+        exit 1
+      fi
+    else
+      echo "Sorting mirrors with reflector."
+      echo "This may take a while. Please wait." 
+      reflector --latest 50 --protocol http --protocol https --sort rate --save /etc/pacman.d/mirrorlist
+      echo "Resyncing pacman with updated mirrorlist"
+      if ! pacman -Sy; then
+        echo "Failed to resync pacman after reflector sorting! Check your mirrorlist"
+        exit 1
+      fi
     fi
   fi
   echo "."
@@ -78,14 +80,16 @@ function PREP {
     BOOTMODE="1"
   fi
   if [ $CUSTOM_KEYMAP == 1 ]; then
-    untilyes '
-      ls /usr/share/kbd/keymaps/**/*.map.gz;
-      sleep 0.5;
-      echo "Select keyboard layout from list (eg: de-latin1):";
-      unset LAYOUT;
-      read LAYOUT;
-      echo "You have entered $LAYOUT. is this correct? (Y/n)"
-    '
+    yes="1"
+    while [ ! "$yes" == 0 ]; do
+      ls /usr/share/kbd/keymaps/**/*.map.gz
+      sleep 0.5
+      unset LAYOUT
+      until [ ! -z "$LAYOUT" ]; do
+        read -p "Select keyboard layout from list (eg: de-latin1):" LAYOUT
+      done
+      isyes "You have entered $LAYOUT. is this correct? (Y/n)"
+    done
     loadkeys $LAYOUT
     KEYSET="1"
   else
@@ -94,210 +98,421 @@ function PREP {
 }
 
 ##
-## Partitioner. This is becoming less of a mess but still arguably insufficient
+## Disk setup / partitioner
 ##
 function PARTITION {
-  EFIDIFF="0"
-  SWAPDIFF="0"
-  HOMEDIFF="0"
   RESPONSE="0"
   ROOTSET="0"
-  until [ $RESPONSE == 5 ] && [ $ROOTSET == 1 ]; do
-    PVALID=("1" "2" "3" "4" "5")
+  EFISET="0"
+  SWAPSET="0"
+  HOMESET="0"
+  if ls -a /tmp/mounts.lemon &> /dev/null; then
+    IFS=$'\n'
+    for i in $(cat /tmp/mounts.lemon); do
+      umount $i
+    done
+    unset IFS
+  fi
+  if ls -a /tmp/swap.lemon &> /dev/null; then
+    IFS=$'\n'
+    for i in $(cat /tmp/swap.lemon); do
+      swapoff $i
+    done
+    unset IFS
+  fi
+  if ls -a /tmp/mnt &> /dev/null; then
+    if ! rm -rf /tmp/mnt; then
+      echo "Mounts exist in /tmp/mnt from a previous run, but unable to unmount them!"
+      echo "Either unmount manually, or restart your computer before running lemon"
+      exit 1
+    fi
+  fi
+  until [ $RESPONSE == 7 ] && [ $ROOTSET == 1 ] && ([ $BOOTMODE == 1 ] || [ $EFISET == 1 ]); do
+    PVALID=("1" "2" "3" "4" "5" "6" "7")
     untilvalidresponse '
       echo "                 Drive Setup";
       echo "                 -----------";
       echo "Choose a menu option to proceed with disk setup.";
       echo "When you are finished, hit finish to continue the installation.";
+      echo " ";
+      if [ $BOOTMODE == 0 ]; then
+        echo "Note: you MUST have both an EFI and root partition!";
+      else
+        if [ $BOOTMODE == 1 ]; then
+          echo "Note: you MUST have a root partition!";
+        else
+          echo "---------------------------------";
+          echo "FATAL: Bootmode detection failed!";
+          echo "---------------------------------";
+          exit 1;
+        fi;
+      fi;
       echo "...................................................................";
-      echo "1: Set ROOT partition target drive";
-      echo "2: Set  EFI partition target drive (optional)";
-      echo "3: Set SWAP partition target drive (optional)";
-      echo "4: Set HOME partition target drive (optional)";
-      echo "5: Finish"
+      echo "1: Drive setup (fdisk)";
+      echo "2: Set ROOT partition";
+      if [ $BOOTMODE == 0 ]; then
+        echo "3: Set  EFI partition";
+      else
+        echo -e "\e[9m3: Set  EFI partition\e[0m";
+      fi;
+      echo "4: Set SWAP partition (optional)";
+      echo "5: Set HOME partition (optional)";
+      echo "6: Set additional mountpoints (optional)";
+      echo "7: Finish"
     ' "${PVALID[@]}"
-    if [ $RESPONSE == 1 ]; then
-      untilyes '
-        echo "Select target drive from the following.";
-        sleep 0.5;
-        echo ".";
-        sleep 0.5;
-        echo ".";
-        sleep 0.5;
-        fdisk -l;
-        sleep 0.5;
-        echo "Target drive:";
-        read DRIVE;
-        echo "You have entered $DRIVE. Is this correct? (Y/n)"
-      '
-      ROOTSET="1"
-    fi
-    if [ $RESPONSE == 2 ]; then
-      untilyes '
-        fdisk -l;
-        echo "Enter target drive for EFI partition:";
-        read EFIPART;
-        echo "You have entered $EFIPART. Is this correct? (Y/n)"
-      '
-      EFIDIFF="1"
-    fi
-    if [ $RESPONSE == 3 ]; then
-      untilyes '
-        fdisk -l;
-        echo "Enter target drive for SWAP partition:";
-        read SWAPPART;
-        echo "You have entered $SWAPPART. Is this correct? (Y/n)"
-      '
-      SWAPDIFF="1"
-    fi
-    if [ $RESPONSE == 4 ]; then
-      untilyes '
-        fdisk -l;
-        echo "Enter target drive for HOME partition:";
-        read HOMEPART;
-        echo "You have entered $HOMEPART. Is this correct? (Y/n)"
-      '
-      HOMEDIFF="1"
-    fi
-    if [ $RESPONSE == 5 ] && [ ! $ROOTSET == 1 ]; then
-      echo "Must set root target drive!"
+    if ([ $RESPONSE == 7 ] && [ ! $ROOTSET == 1 ]) || ([ $RESPONSE == 7 ] && [ $BOOTMODE == 0 ] && [ ! $EFISET == 1 ]); then
+      echo "Error: Essential partition not set! (either ROOT partition not set, or EFI partition not set if running in EFI mode)"
       RESPONSE="0"
       sleep 1
     fi
-  done
-  if [ $BOOTMODE == 0 ]; then
-    echo "Time to partition. You MUST have an EFI and root partition. Swap space is optional."
-  else
-    if [ $BOOTMODE == 1 ]; then
-      echo "Time to partition. You MUST have a root partition. Swap space is optional." 
-    else
-      echo "FATAL: Bootmode detection failed!"
-      exit 1
+    if [ $RESPONSE == 1 ]; then
+      MENU="NULL"
+      until [ $MENU == done ]; do
+        echo "."
+        yes="1"
+        while [ ! "$yes" == 0 ]; do
+          DRIVE="NULL"
+          until ls -a $DRIVE &> /dev/null; do
+            DRIVE="NULL"
+            fdisk -l
+            read -p "Target drive:" DRIVE
+            if [ -z "$DRIVE" ]; then
+              DRIVE="NULL"
+            fi
+            if ! ls -a $DRIVE &> /dev/null; then
+              echo "Error: $DRIVE does not exist!"
+              sleep 1
+            fi
+          done
+          isyes "You have entered $DRIVE. Is this correct? (Y/n)"
+        done
+        if ! fdisk $DRIVE; then
+          echo "Error: failed to execute fdisk on $DRIVE!"
+        fi
+        echo "If you have more drive setup to complete, hit enter."
+        echo "If you are finished, type 'done' to return to the previous menu."
+        read MENU
+        if [ -z "$MENU" ]; then
+          MENU="NULL"
+        fi
+      done
     fi
-  fi
-  if [ $EFIDIFF == 1 ] || [ $SWAPDIFF == 1 ] || [ $HOMEDIFF == 1 ]; then
-    echo "fdisk will now execute on $DRIVE (ROOT partition). Press enter to continue."
-    read NULL
-  else
-    sleep 3
-  fi
-  untilyes '
-    if ! fdisk $DRIVE; then
-      echo "Failed to fdisk $DRIVE!";
-      exit 1;
-    fi;
-    echo ".";
-    fdisk -l | grep $DRIVE;
-    echo ".";
-    echo "Does this look right? (Y/n)"
-  '
-  if [ $EFIDIFF == 1 ]; then
-    echo "fdisk will now execute on $EFIPART (EFI partition). Press enter to continue."
-    read NULL
-    untilyes '
-      if ! fdisk $EFIPART; then
-        echo "Failed to fdisk $EFIPART!";
-        exit 1;
-      fi;
-      echo ".";
-      fdisk -l | grep $EFIPART;
-      echo ".";
-      echo "Does this look right? (Y/n)"
-    '
-  fi
-  if [ $SWAPDIFF == 1 ]; then
-    echo "fdisk will now execute on $SWAPPART (SWAP partition). Press enter to continue."
-    read NULL
-    untilyes '
-      if ! fdisk $SWAPPART; then
-        echo "Failed to fdisk $SWAPPART!";
-        exit 1;
-      fi;
-      echo ".";
-      fdisk -l | grep $SWAPPART;
-      echo ".";
-      echo "Does this look right? (Y/n)"
-    '
-  fi
-  if [ $HOMEDIFF == 1 ]; then
-    echo "fdisk will now execute on $HOMEPART (HOME partition). Press enter to continue."
-    read NULL
-    untilyes '
-      if ! fdisk $HOMEPART; then
-        echo "Failed to fdisk $HOMEPART!";
-        exit 1;
-      fi;
-      echo ".";
-      fdisk -l | grep $HOMEPART;
-      echo ".";
-      echo "Does this look right? (Y/n)"
-    '
-  fi
-  untilyes '
-    unset ROOT;
-    unset EFI;
-    unset SWAP;
-    unset dHOME;
-    echo "Enter root partition:";
-    read ROOT;
-    if [ $BOOTMODE == 0 ]; then
-      echo "Enter EFI partition:";
-      read EFI;
-    fi;
-    echo "Enter SWAP partition (leave blank for none):";
-    read SWAP;
-    if [ $HOMEDIFF == 1 ]; then
-      echo "Enter HOME partition:";
-      read dHOME;
-    fi;
-    echo ".";
-    sleep 0.5;
-    echo ".";
-    sleep 0.5;
-    echo "ROOT";
-    echo "----";
-    echo $ROOT;
-    echo " ";
-    if [ $BOOTMODE == 0 ]; then
-      echo "EFI";
-      echo "----";
-      echo $EFI;
-      echo " ";
-    fi;
-    echo "SWAP";
-    echo "----";
-    echo $SWAP;
-    echo " ";
-    if [ $HOMEDIFF == 1 ]; then
-      echo "HOME";
-      echo "----";
-      echo $dHOME;
-      echo " ";
-    fi;
-    echo ".";
-    echo " ";
-    echo "Does this look right? (Y/n)"
-  '
-  echo "Formatting..."
+    if [ $RESPONSE == 2 ]; then
+      yes="1"
+      while [ ! "$yes" == 0 ]; do
+        fdisk -l
+        ROOT="NULL"
+        until ls -a $ROOT &> /dev/null; do
+          read -p "Enter ROOT partition:" ROOT
+          if [ -z "$ROOT" ]; then
+            ROOT="NULL"
+          fi
+          if ! ls -a $ROOT &> /dev/null; then
+            echo "Error: partition $ROOT does not exist!"
+          fi
+        done
+        isyes "You have entered $ROOT for your ROOT partition. Is this correct? (Y/n)"
+      done
+      ROOTSET="1"
+    fi
+    if [ $RESPONSE == 3 ]; then
+      if [ $BOOTMODE == 1 ]; then
+        echo "Error: you are running in BIOS mode! EFI partition setting is disabled"
+      else
+        yes="1"
+        while [ ! "$yes" == 0 ]; do
+          fdisk -l
+          EFI="NULL"
+          until ls -a $EFI &> /dev/null; do
+            read -p "Enter EFI partition:" EFI
+            if [ -z "$EFI" ]; then
+              EFI="NULL"
+            fi
+            if ! ls -a $EFI &> /dev/null; then
+              echo "Error: partition $EFI does not exist!"
+            fi
+          done
+          isyes "You have entered $EFI for your EFI partition. Is this correct? (Y/n)"
+        done
+        EFISET="1"
+      fi
+    fi
+    if [ $RESPONSE == 4 ]; then
+      yes="1"
+      while [ ! "$yes" == 0 ]; do
+        fdisk -l
+        SWAP="NULL"
+        until ls -a $SWAP &> /dev/null; do
+          read -p "Enter SWAP partition:" SWAP
+          if [ -z "$SWAP" ]; then
+            SWAP="NULL"
+          fi
+          if ! ls -a $SWAP &> /dev/null; then
+            echo "Error: Partition $SWAP does not exist!"
+          fi
+        done
+        isyes "You have entered $SWAP for your SWAP partition. Is this correct? (Y/n)"
+      done
+      SWAPSET="1"
+    fi
+    if [ $RESPONSE == 5 ]; then
+      yes="1"
+      while [ ! "$yes" == 0 ]; do
+        fdisk -l
+        dHOME="NULL"
+        until ls -a $dHOME &> /dev/null; do
+          read -p "Enter HOME partition:" dHOME
+          if [ -z "dHOME" ]; then
+            dHOME="NULL"
+          fi
+          if ! ls -a $dHOME &> dev/null; then
+            echo "Error: Partition $dHOME does not exist!"
+          fi
+        done
+        isyes "You have entered $dHOME for your HOME partition. Is this correct? (Y/n)"
+      done
+      echo "."
+      if isyes "Format HOME partition? (Y/n)"; then
+        FORMATHOME="1"
+      fi
+      HOMESET="1"
+    fi
+    if [ $RESPONSE == 6 ]; then
+      RESPONSE="NULL"
+      TARGETPART="NULL"
+      TPFORMAT="0"
+      FORMATOPTS="NULL"
+      MOUNTOPTS="NULL"
+      MOUNTPOINT="NULL"
+      NEEDFSSET="0"
+      until [ $RESPONSE == done ]; do
+        dVALID=("1" "2" "3" "4" "5" "6" "7" "done")
+        untilvalidresponse '
+          echo "Additional mountpoint setup menu";
+          echo "--------------------------------";
+          echo "Choose an option from the menu below.";
+          echo "when you are finished setting up additional mountpoints, type 'done' to return to the previous menu.";
+          echo "----------------------------------------------------------------------------------------------------";
+          echo "1 - Set target partition";
+          echo "2 - Formatting options";
+          echo "3 - Set target partition mountpoint";
+          echo "4 - Set mountpoint options";
+          echo "5 - List changes to commit";
+          echo "6 - Clear data";
+          echo "7 - Commit changes"
+        ' "${dVALID[@]}"
+        if [ $RESPONSE == 1 ]; then
+          fdisk -l
+          "."
+          read -p "Enter target partition:" TARGETPART
+          if [ -z "$TARGETPART" ]; then
+            TARGETPART="NULL"
+          fi
+          if ! ls -a $TARGETPART &> /dev/null; then
+            echo "Error: $TARGETPART does not exist!"
+            TARGETPART="NULL"
+          else
+            if ! isyes "You have entered $TARGETPART. Is this correct? (Y/n)"; then
+              echo "Cancelled"
+              TARGETPART="NULL"
+            else
+              echo "."
+              echo "Target partition $TARGETPART set"
+              echo "."
+            fi
+          fi
+        fi
+        if [ $RESPONSE == 2 ]; then
+          RESPONSE="NULL"
+          until [ $RESPONSE == 3 ] && [ $NEEDFSSET == 0 ]; do
+            zVALID=("1" "2" "3")
+            untilvalidresponse '
+              echo "Format options";
+              echo "--------------";
+              echo "1 - Toggle format target";
+              echo "2 - Filesystem select";
+              echo "3 - back"
+            ' "${zVALID[@]}"
+            if [ $RESPONSE == 1 ]; then
+              if isyes "Format target partition? (Y/n)"; then
+                echo "Target partition format ON"
+                TPFORMAT="1"
+                NEEDFSSET="1"
+              else
+                echo "Target partition format OFF"
+                TPFORMAT="0"
+                NEEDFSSET="0"
+              fi
+            fi
+            if [ $RESPONSE == 2 ]; then
+              until [ $RESPONSE == 4 ]; do
+                xVALID=("1" "2" "3" "4")
+                untilvalidresponse '
+                  echo "Choose filesystem for target partition";
+                  echo "--------------------------------------";
+                  echo "1 - ext4";
+                  echo "2 - btrfs";
+                  echo "3 - vfat";
+                  echo "4 - back"
+                ' "${xVALID[@]}"
+                if [ $RESPONSE == 1 ]; then
+                  if isyes "You have chosen ext4 for target filesystem. Is this correct? (Y/n)"; then
+                    FORMATOPTS="ext4"
+                    NEEDFSSET="0"
+                  fi
+                fi
+                if [ $RESPONSE == 2 ]; then
+                  if isyes "You have chosen btrfs for target filesystem. Is this correct? (Y/n)"; then
+                    FORMATOPTS="btrfs"
+                    NEEDFSSET="0"
+                  fi
+                fi
+                if [ $RESPONSE == 3 ]; then
+                  if isyes "You have chosen vfat for target filesystem. Is this correct? (Y/n)"; then
+                    FORMATOPTS="vfat"
+                    NEEDFSSET="0"
+                  fi
+                fi
+              done
+            fi
+            if [ $RESPONSE == 3 ] && [ $NEEDFSSET == 1 ]; then
+              echo "Error: Format target partition is ON, but no filesystem is selected!"
+              echo "Please select a filesystem for target partition, or toggle format target partition OFF"
+            fi
+          done
+        fi
+        if [ $RESPONSE == 3 ]; then
+          yes="1"
+          while [ ! "$yes" == 0 ]; do
+            read -p "Enter target mountpoint:" MOUNTPOINT
+            if [ -z "$MOUNTPOINT" ]; then
+	      MOUNTPOINT="NULL"
+            fi
+            isyes "You have entered $MOUNTPOINT. Is this correct? (Y/n)"
+          done
+        fi
+        if [ $RESPONSE == 4 ]; then
+          read -p "Enter mount options:" MOUNTOPTS
+          if [ -z "$MOUNTOPTS" ]; then
+            MOUNTOPTS="NULL"
+          fi
+          if ! isyes "You have entered $MOUNTOPTS. Is this correct? (Y/n)"; then
+            echo "Cancelled"
+            MOUNTOPTS="NULL"
+          fi
+        fi
+        if [ $RESPONSE == 5 ]; then
+          echo "Target partition: $TARGETPART"
+          if [ $TPFORMAT == 1 ]; then
+            echo "Format: Yes \( $FORMATOPTS \)"
+          else
+            echo "Format: No"
+          fi
+          echo "Mountpoint: $MOUNTPOINT"
+          if [ ! $MOUNTOPTS == NULL ]; then
+            echo "Mountopts: $MOUNTOPTS"
+          else
+            echo "Mountopts:"
+          fi
+        fi
+        if [ $RESPONSE == 6 ]; then
+          if isyes "Are you sure you wish to clear data? (Y/n)"; then
+            TARGETPART="NULL"
+            TPFORMAT="0"
+            FORMATOPTS="NULL"
+            MOUNTOPTS="NULL"
+            MOUNTPOINT="NULL"
+            NEEDFSSET="0"
+            echo "All fields reset to NULL"
+          fi
+        fi
+        if [ $RESPONSE == 7 ]; then
+          echo "------------------------"
+          echo "Target partition: $TARGETPART"
+          if [ $TPFORMAT == 1 ]; then
+            echo "Format: Yes ( $FORMATOPTS )"
+          else
+            echo "Format: No"
+          fi
+          echo "Mountpoint: $MOUNTPOINT"
+          if [ ! $MOUNTOPTS == NULL ]; then
+            echo "Mountopts: $MOUNTOPTS"
+          else
+            echo "Mountopts:"
+          fi
+          echo "------------------------"
+          if isyes "Commit the above changes? (Y/n)"; then
+            if [ $TPFORMAT == 1 ]; then
+              FORMATERR="0"
+              if [ $FORMATOPTS == btrfs ]; then
+                if ! mkfs.btrfs $TARGETPART; then
+                  echo "mkfs.btrfs failed on $TARGETPART!"
+                  FORMATERR="1"
+                else
+                  mount $TARGETPART /mnt
+                  cd /mnt
+                  btrfs subvolume create _active
+                  btrfs subvolume create _active/levol
+                  btrfs subvolume create _snapshots
+                  cd ..
+                  umount /mnt
+                  if [ $MOUNTOPTS == NULL ]; then
+                    MOUNTOPTS="-o subvol=_active/levol"
+                  fi
+                fi
+              fi
+              if [ $FORMATOPTS == ext4 ]; then
+                if ! mkfs.ext4 $TARGETPART; then
+                  echo "mkfs.ext4 failed on $TARGETPART!"
+                  FORMATERR="1"
+                fi
+              fi
+              if [ $FORMATOPTS == vfat ]; then
+                if ! mkfs.vfat $TARGETPART; then
+                  echo "mkfs.vfat failed on $TARGETPART!"
+                  FORMATERR="1"
+                fi
+              fi
+            fi
+            if [ ! $MOUNTOPTS == NULL ] && ([ ! $FORMATERR == 1 ] || [ ! $TPFORMAT == 1 ]); then
+              echo "$MOUNTOPTS $TARGETPART /tmp/mnt/$MOUNTPOINT" >> /tmp/mountpoints.lemon
+              ADDMOUNTS="1"
+              echo "/tmp/mnt/$MOUNTPOINT" >> /tmp/mounts.lemon
+            else
+              if [ ! $FORMATERR == 1 ] || [ ! $TPFORMAT == 1 ]; then
+                echo "$TARGETPART /tmp/mnt/$MOUNTPOINT" >> /tmp/mountpoints.lemon
+                ADDMOUNTS="1"
+                echo "/tmp/mnt/$MOUNTPOINT" >> /tmp/mounts.lemon
+                echo "/tmp/mnt/$MOUNTPOINT" >> /tmp/dmounts.lemon
+              fi
+            fi
+          fi
+        fi
+      done
+    fi
+  done
   echo "."
+  echo "Formatting..."
   sleep 0.5
   if [ $USEBTRFS == 1 ]; then
     if ! mkfs.btrfs $ROOT; then
-      echo "Formatting root partition failed!"
+      echo "Formatting ROOT partition failed!"
       exit 1
     else
       mount $ROOT /mnt
       cd /mnt
       btrfs subvolume create _active
       btrfs subvolume create _active/rootvol
-      btrfs subvolume create _active/homevol
+      if [ ! $USEBTRFSHOME == 1 ]; then
+        btrfs subvolume create _active/homevol
+      fi
       btrfs subvolume create _snapshots
       cd ..
       umount /mnt
     fi
-  else    
+  else
     if ! mkfs.ext4 $ROOT; then
-      echo "Formatting root partition failed!"
+      echo "Formatting ROOT partition failed!"
       exit 1
     fi
   fi
@@ -307,21 +522,38 @@ function PARTITION {
       exit 1
     fi
   fi
-  if [ $HOMEDIFF == 1 ]; then
-    if ! mkfs.ext4 $dHOME; then
-      echo "Formatting HOME partition failed!"
-      exit 1
+  if [ $FORMATHOME == 1 ]; then
+    if [ $USEBTRFSHOME == 1 ]; then
+      if ! mkfs.btrfs $dHOME; then
+        echo "Formatting HOME partition failed!"
+        exit 1
+      else
+        mount $dHOME /mnt
+        cd /mnt
+        btrfs subvolume create _active
+        btrfs subvolume create _active/homevol
+        btrfs subvolume create _snapshots
+        cd ..
+        umount /mnt
+      fi
+    else
+      if ! mkfs.ext4 $dHOME; then
+        echo "Formatting HOME partition failed!"
+        exit 1
+      fi
     fi
   fi
-  if [ ! -z $SWAP ]; then
-    echo "Enabling swap space..."
+  if [ $SWAPSET == 1 ]; then
     if ! mkswap $SWAP; then
       echo "Formatting SWAP partition failed!"
       exit 1
-    fi
-    if ! swapon $SWAP; then
-      echo "Failed to activate swapspace!"
-      exit 1
+    else
+      if ! swapon $SWAP; then
+        echo "Failed to activate swapspace!"
+        exit 1
+      else
+        echo "$SWAP" >> /tmp/swap.lemon
+      fi
     fi
   fi
   echo "."
@@ -333,21 +565,25 @@ function PARTITION {
       echo "Failed to mount ROOT partition!"
       exit 1
     fi
-    mkdir /tmp/mnt/home
     mkdir -p /tmp/mnt/mnt/defvol
-    if ! mount -o subvol=_active/homevol $ROOT /tmp/mnt/home; then
-      echo "Failed to mount ROOT partition!"
-      exit 1
+    if [ ! $USEBTRFSHOME == 1 ]; then
+      mkdir /tmp/mnt/home
+      if ! mount -o subvol=_active/homevol $ROOT /tmp/mnt/home; then
+        echo "Failed to mount ROOT partition!"
+        exit 1
+      fi
     fi
     if ! mount -o subvol=/ $ROOT /tmp/mnt/mnt/defvol; then
       echo "Failed to mount ROOT partition!"
       exit 1
     fi
+    ROOTMOUNTED="1"
   else
     if ! mount $ROOT /tmp/mnt/; then
       echo "Failed to mount ROOT partition!"
       exit 1
     fi
+    ROOTMOUNTED="1"
   fi
   if [ $BOOTMODE == 0 ]; then
     mkdir -p /tmp/mnt/boot/efi
@@ -355,22 +591,47 @@ function PARTITION {
       echo "Failed to mount EFI partition!"
       exit 1
     fi
+    echo "/tmp/mnt/boot/efi" >> /tmp/mounts.lemon
   else
     mkdir /tmp/mnt/boot
   fi
-  if [ $HOMEDIFF == 1 ]; then
-    mkdir -p /tmp/mnt/home
-    if ! mount $dHOME /tmp/mnt/home; then
-      echo "Failed to mount HOME partition!"
-      exit 1
+  if [ $HOMESET == 1 ]; then
+    mkdir /tmp/mnt/home
+    if [ $USEBTRFSHOME == 1 ]; then
+      if ! mount -o subvol=_active/homevol $dHOME /tmp/mnt/home; then
+        echo "Failed to mount HOME partition!"
+        exit 1
+      fi
+      echo "/tmp/mnt/home" >> /tmp/mounts.lemon
+    else
+      if ! mount $dHOME /tmp/mnt/home; then
+        echo "Failed to mount HOME partition!"
+        exit 1
+      fi
+      echo "/tmp/mnt/home" >> /tmp/mounts.lemon
     fi
   fi
-  echo "Do you have any additional partitions / mount points to set up? (Y/n)"
-  if isyes; then
-    echo "You will now return to the shell."
-    echo "Any additional mount points need to be set up in /tmp/mnt/, NOT /mnt/."
-    echo "When you are finished, type exit and lemon will resume."
-    bash --login -i
+  if [ -z "$ADDMOUNTS" ]; then
+    ADDMOUNTS="0"
+  fi
+  if [ $ADDMOUNTS == 1 ]; then
+    IFS=$'\n'
+    for i in $(cat /tmp/dmounts.lemon); do
+      mkdir -p $i
+    done
+    for i in $(cat /tmp/mountpoints.lemon); do
+      if ! mount $i; then
+        echo "Failed to mount $i!"
+        if ! isyes "Continue anyway? (Y/n)"; then
+          echo "Aborting"
+          exit 1
+        fi
+      fi
+    done
+    unset IFS
+  fi
+  if [ $ROOTMOUNTED == 1 ]; then
+    echo "/tmp/mnt/" >> /tmp/mounts.lemon
   fi
 }
 
@@ -381,7 +642,7 @@ function INSTALL {
   echo "Installing the base system..."
   sleep 0.5
   cd /tmp/mnt/
-  if [ $USEBTRFS == 1 ]; then
+  if [ $USEBTRFS == 1 ] || [ $USEBTRFSHOME == 1 ]; then
     if ! pacstrap . base btrfs-progs; then
       echo "pacstrap base system failed!"
       exit 1
@@ -427,8 +688,7 @@ function INSTALL {
   mv etc/resolv.conf.bak etc/resolv.conf
   rm -rf etc/lemon
   echo "."
-  echo "Installation complete! Reboot now? (Y/n)"
-  if ! isyes; then
+  if ! isyes "Installation complete! Reboot now? (Y/n)"; then
     exit 0
   else
     reboot
