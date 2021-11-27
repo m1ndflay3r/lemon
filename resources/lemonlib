@@ -1,36 +1,20 @@
 #!/usr/bin/env bash
 
-# Promps for input, returns true if response is a variant of yes and returns false if it isn't.
+# Promps for input, returns true if response is a variant of yes and returns false if it isn't. Can accept a string for input prompt dialogue
 function isyes {
-  read ANSWER
+  if [ ! -z "$1" ]; then
+    read -p "$1  " ANSWER
+  else
+    read ANSWER
+  fi
   if [ -z "$ANSWER" ]; then
     ANSWER="NULL"
   fi
   if [ $ANSWER == y ] || [ $ANSWER == Y ] || [ $ANSWER == yes ] || [ $ANSWER == Yes ] || [ $ANSWER == YES ]; then
-    true
+    yes=0 && return 0
   else
-    false
+    yes=0 && return 0
   fi
-}
-
-# Executes input operations once, then repeats them until the user answers an input prompt with yes.
-# Syntax: untilyes 'echo foo; echo bar'
-#
-function untilyes {
-  eval "$@"
-  while ! isyes; do
-    eval "$@"
-  done
-}
-
-# Executes input operations once, then repeats them until the user answers an input prompt with any response that isn't yes.
-# Syntax: untilno 'echo foo; echo bar'
-#
-function untilno {
-  eval "$@"
-  while isyes; do
-    eval "$@"
-  done
 }
 
 # Takes input in the form of an array, and checks each array item against user input.
@@ -40,7 +24,7 @@ function untilno {
 # Syntax: isvalidresponse "${INPUTARRAY[@]}"
 #
 function isvalidresponse {
-  RESPONSE=NULL
+  RESPONSE="NULL"
   read RESPONSE
   if [ -z "$RESPONSE" ]; then
     RESPONSE="NULL"
@@ -60,7 +44,7 @@ function isvalidresponse {
 function untilvalidresponse {
   eval "$1"
   until isvalidresponse "${@:2}"; do
-    echo "Invalid!"
+    echo "Invalid response!"
     eval "$1"
   done
 }
@@ -85,8 +69,7 @@ function nettest {
     if [ "$1" == --noretry ]; then
       return 1
     else
-      echo "Retry?"
-      if ! isyes; then
+      if ! isyes "Retry? (Y/n)"; then
         return 1
       fi
     fi
@@ -114,11 +97,10 @@ function aurinst {
   PKGB=./PKGBUILD
   if [ ! -f $PKGB ]; then
     echo "ERROR: Package $@ does not exist!"
-    sudo echo "Failed AUR package: $@ (invalid package name)" >> /tmp/lemonaid.log
+    echo "Failed AUR package: $@ (invalid package name)" >> /home/aur/aur.log
     return 1
   else
-    echo "Would you like to edit the PKGBUILD? (Y/n)"
-    if isyes; then
+    if isyes "Would you like to edit the PKGBUILD? (Y/n)"; then
       if which nano &> /dev/null; then
         nano ./PKGBUILD
       else
@@ -127,7 +109,7 @@ function aurinst {
     fi
     if ! (makepkg -cs); then
       echo "ERROR: Package $@ failed to build!"
-      sudo echo "Failed AUR package: $@ (build failure)" >> /tmp/lemonaid.log
+      echo "Failed AUR package: $@ (build failure)" >> /home/aur/aur.log
       return 1
     else
       sudo pacman -U --noconfirm *.pkg.tar*
