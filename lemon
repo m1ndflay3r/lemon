@@ -522,6 +522,9 @@ function PARTITION {
       exit 1
     fi
   fi
+  if [ -z "$FORMATHOME" ]; then
+    FORMATHOME="NULL"
+  fi
   if [ $FORMATHOME == 1 ]; then
     if [ $USEBTRFSHOME == 1 ]; then
       if ! mkfs.btrfs $dHOME; then
