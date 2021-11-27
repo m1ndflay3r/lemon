@@ -179,14 +179,14 @@ function CONF {
     unset CITY
     cd /usr/share/zoneinfo
     ls -a
-    read -p "Enter your region:" REGION
+    read -p "Enter your region: " REGION
     if [ -z "$REGION" ]; then
       REGION="NULL"
     fi
     if ! cd $REGION; then
       until cd $REGION; do
         echo "Invalid region!"
-        read -p "Enter your region:" REGION
+        read -p "Enter your region: " REGION
         if [ -z "$REGION" ]; then
           REGION="NULL"
         fi
@@ -194,14 +194,14 @@ function CONF {
     fi
     cd $REGION
     ls -a
-    read -p "Enter your city:" CITY
+    read -p "Enter your city: " CITY
     if [ -z "$CITY" ]; then
       CITY="NULL"
     fi
     if ! ls -a /usr/share/zoneinfo/$REGION/$CITY &> /dev/null; then
       until ls -a /usr/share/zoneinfo/$REGION/$CITY &> /dev/null; do
         echo "Error: $CITY does not exist in filesystem!"
-        read -p "Enter your city:" CITY
+        read -p "Enter your city: " CITY
         if [ -z "$CITY" ]; then
           CITY="NULL"
         fi
@@ -216,10 +216,10 @@ function CONF {
     unset ISO
     unset UTF
     until [ ! -z "$ISO" ]; do
-      read -p "Please enter your preferred ISO locale (eg: en_US):" ISO
+      read -p "Please enter your preferred ISO locale (eg: en_US): " ISO
     done
     until [ ! -z "$UTF" ]; do
-      read -p "Please enter your preferred UTF locale (eg: en_US.UTF-8):" UTF
+      read -p "Please enter your preferred UTF locale (eg: en_US.UTF-8): " UTF
     done
     echo "."
     echo "ISO locale: $ISO"
@@ -245,7 +245,7 @@ function CONF {
   yes="1"
   while [ ! "$yes" == 0 ]; do
     unset HOSTNAME
-    read -p "Please enter a name for the system (hostname):" HOSTNAME
+    read -p "Please enter a name for the system (hostname): " HOSTNAME
     if [ -z "$HOSTNAME" ]; then
       HOSTNAME="NULL"
     fi
@@ -268,7 +268,7 @@ function CONF {
     yes="1"
     while [ ! "$yes" == 0 ]; do
       unset USER
-      read -p "Enter non-root username:" USER
+      read -p "Enter non-root username: " USER
       if [ -z "$USER" ]; then
         USER="NULL"
       fi
@@ -288,7 +288,7 @@ function CONF {
         echo "$USER ALL=(ALL:ALL) ALL" >> /etc/sudoers
       fi
     fi
-    echo "Enter a new password for $USER:"
+    echo "Enter a new password for $USER: "
     passwd $USER
     mkdir -p /home/$USER
     cp -r /etc/skel/.bash* /home/$USER
