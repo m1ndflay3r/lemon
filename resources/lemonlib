@@ -8,7 +8,7 @@ function isyes {
     read ANSWER
   fi
   if [ -z "$ANSWER" ]; then
-    ANSWER="NULL"
+    ANSWER="y"
   fi
   if [ $ANSWER == y ] || [ $ANSWER == Y ] || [ $ANSWER == yes ] || [ $ANSWER == Yes ] || [ $ANSWER == YES ]; then
     yes=0 && return 0
