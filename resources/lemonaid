@@ -73,7 +73,12 @@ function MAIN {
       pacman -S --noconfirm vim &> /dev/null
     fi
   fi
-  if [ $AURPACKAGELIST == 1 ]; then
+  APLPRES=$(if ls -a /etc/lemon/lists/aurpackagelist* &> /dev/null; then true; else false; fi)
+  if [ ! $APLPRES == 0 ]; then
+    echo "Error: AUR is enabled, but no aurpackagelist found!"
+    echo "AUR package installation skipped: No aurpackagelist found!" >> /tmp/lemonaid.log
+  fi
+  if [ $AURPACKAGELIST == 1 ] && [ $APLPRES == 0 ]; then
     pacman -S --noconfirm base-devel git &> /dev/null
     useradd aur
     mkdir /home/aur
@@ -87,16 +92,19 @@ function MAIN {
           for i in $AURPACKAGES; do
             (aurinst $i);
           done;
-          echo "Install aurtool? (for aur package management post-install)";
-          if isyes; then
+          if isyes "Install Aurtool? (for AUR package management post-install) (Y/n)"; then
             if ! aurinst package-query; then
               echo "Failed to install aurtool: package-query failed! (aurtool dependency)";
-              echo "aurtool failed: package-query failed to install" >> /tmp/lemonaid.log;
+              echo "Aurtool failed: package-query failed to install" >> /home/aur/aur.log;
             else
               cd $HOME;
-              git clone http://github.com/m1ndflay3r/aurtool;
-              sudo mv aurtool/aurtool /bin/;
-              sudo chmod 755 /bin/aurtool;
+              if ! git clone http://github.com/m1ndflay3r/aurtool; then
+                echo "Failed to fetch aurtool!";
+                echo "Aurtool failed: Failed to fetch from repository" >> /home/aur/aur.log;
+              else
+                sudo mv aurtool/aurtool /bin/;
+                sudo chmod 755 /bin/aurtool;
+              fi;
             fi;
           fi;
           exit
@@ -104,6 +112,13 @@ function MAIN {
     su aur
     rm -rf /etc/sudoers
     mv /etc/sudoers.bak /etc/sudoers
+    if ls -a /home/aur/aur.log &> /dev/null; then
+      IFS=$'\n'
+      for i in $(cat /home/aur/aur.log); do
+        echo "$i" >> /tmp/lemonaid.log
+      done
+      unset IFS
+    fi
     rm -rf /home/aur
     userdel aur
     if cat /tmp/lemonaid.log | grep AUR &> /dev/null; then
@@ -141,7 +156,7 @@ function BOOT {
       fi
     fi
   else
-    echo "proceeding without grub"
+    echo "Proceeding without grub."
     ln -s /hostlvm /run/lvm
   fi
   if [ $REFIND == 1 ] && [ $BOOTMODE == 0 ]; then
@@ -159,40 +174,59 @@ function BOOT {
 # Configuration of the new system.
 # Includes things like hostname, user creation, etc
 function CONF {
-  untilyes '
-    unset CITY;
-    cd /usr/share/zoneinfo;
-    ls -a;
-    echo "Enter your region:";
-    read REGION;
+  yes="1"
+  while [ ! "$yes" == 0 ]; do
+    unset CITY
+    cd /usr/share/zoneinfo
+    ls -a
+    read -p "Enter your region:" REGION
+    if [ -z "$REGION" ]; then
+      REGION="NULL"
+    fi
     if ! cd $REGION; then
       until cd $REGION; do
-        echo "Invalid region!";
-        echo "Enter your region:";
-        read REGION;
-      done;
-    fi;
-    cd $REGION;
-    ls -a;
-    echo "Enter your city:";
-    read CITY;
-    echo "You have entered $REGION and $CITY - is this correct? (Y/n)"
-  '
+        echo "Invalid region!"
+        read -p "Enter your region:" REGION
+        if [ -z "$REGION" ]; then
+          REGION="NULL"
+        fi
+      done
+    fi
+    cd $REGION
+    ls -a
+    read -p "Enter your city:" CITY
+    if [ -z "$CITY" ]; then
+      CITY="NULL"
+    fi
+    if ! ls -a /usr/share/zoneinfo/$REGION/$CITY &> /dev/null; then
+      until ls -a /usr/share/zoneinfo/$REGION/$CITY &> /dev/null; do
+        echo "Error: $CITY does not exist in filesystem!"
+        read -p "Enter your city:" CITY
+        if [ -z "$CITY" ]; then
+          CITY="NULL"
+        fi
+      done
+    fi
+    isyes "You have entered $REGION and $CITY - is this correct? (Y/n)"
+  done
   ln -sf /usr/share/zoneinfo/$REGION/$CITY /etc/localtime
   hwclock --systohc
-  untilyes '
-    unset ISO;
-    unset UTF;
-    echo "Please enter your preferred ISO locale. Eg: en_US";
-    read ISO;
-    echo "Please enter your preferred UTF locale. Eg: en_US.UTF-8";
-    read UTF;
-    echo ".";
-    echo "ISO locale: $ISO";
-    echo "UTF locale: $UTF";
-    echo ".";
-    echo "Is this correct? (Y/n)"
-  '
+  yes="1"
+  while [ ! "$yes" == 0 ]; do
+    unset ISO
+    unset UTF
+    until [ ! -z "$ISO" ]; do
+      read -p "Please enter your preferred ISO locale (eg: en_US):" ISO
+    done
+    until [ ! -z "$UTF" ]; do
+      read -p "Please enter your preferred UTF locale (eg: en_US.UTF-8):" UTF
+    done
+    echo "."
+    echo "ISO locale: $ISO"
+    echo "UTF locale: $UTF"
+    echo "."
+    isyes "Is this correct? (Y/n)"
+  done
   echo "$ISO ISO-8859-1" >> /etc/locale.gen
   echo "$UTF UTF-8" >> /etc/locale.gen
   locale-gen
@@ -208,12 +242,15 @@ function CONF {
   else
     echo "LANG=$UTF" >> /etc/locale.conf
   fi
-  untilyes '
-    echo "Please enter a name for the system (hostname):";
-    unset HOSTNAME;
-    read HOSTNAME;
-    echo "You have entered $HOSTNAME. Is this correct? (Y/n)"
-  '
+  yes="1"
+  while [ ! "$yes" == 0 ]; do
+    unset HOSTNAME
+    read -p "Please enter a name for the system (hostname):" HOSTNAME
+    if [ -z "$HOSTNAME" ]; then
+      HOSTNAME="NULL"
+    fi
+    isyes "You have entered $HOSTNAME. Is this correct? (Y/n)"
+  done
   echo $HOSTNAME > /etc/hostname
   echo "127.0.0.1     localhost" >> /etc/hosts
   echo "::1           localhost" >> /etc/hosts
@@ -228,12 +265,15 @@ function CONF {
     fi
   fi
   if [ $NONROOTUSER == 1 ] || [ $ROOT == 0 ]; then
-    untilyes '
-      echo "Enter non-root username:";
-      unset USER;
-      read USER;
-      echo "You have entered $USER for your username. Is this correct? (Y/n)"
-    '
+    yes="1"
+    while [ ! "$yes" == 0 ]; do
+      unset USER
+      read -p "Enter non-root username:" USER
+      if [ -z "$USER" ]; then
+        USER="NULL"
+      fi
+      isyes "You have entered $USER for your username. Is this correct? (Y/n)"
+    done
     useradd $USER
     usermod -a -G wheel $USER
     if [ $SUDO == 1 ] || [ $ROOT == 0 ]; then
@@ -262,8 +302,7 @@ function CONF {
   LOG=/tmp/lemonaid.log
   if [ -f "$LOG" ]; then
     echo "Process completed sucessfuly, but errors were detected"
-    echo "Would you like to read the error log? (Y/n)"
-    if isyes; then
+    if isyes "Would you like to read the error log? (Y/n)"; then
       if which nano &> /dev/null; then
         nano $LOG
       else
@@ -272,8 +311,7 @@ function CONF {
       echo "."
     fi
   fi
-  echo "Do you have any additional (manual) configuration to do inside the chroot environment? (Y/n)"
-  if isyes; then
+  if isyes "Do you have any additional (manual) configuration to do inside the chroot environment? (Y/n)"; then
     echo "You will now be presented with a bash shell within a chroot of the installation target."
     echo "When you are finished with additional setup, type exit and the install process will continue."
     bash --login -i
