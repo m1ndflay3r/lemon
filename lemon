@@ -86,7 +86,7 @@ function PREP {
       sleep 0.5
       unset LAYOUT
       until [ ! -z "$LAYOUT" ]; do
-        read -p "Select keyboard layout from list (eg: de-latin1):" LAYOUT
+        read -p "Select keyboard layout from list (eg: de-latin1): " LAYOUT
       done
       isyes "You have entered $LAYOUT. is this correct? (Y/n)"
     done
@@ -175,7 +175,7 @@ function PARTITION {
           until ls -a $DRIVE &> /dev/null; do
             DRIVE="NULL"
             fdisk -l
-            read -p "Target drive:" DRIVE
+            read -p "Target drive: " DRIVE
             if [ -z "$DRIVE" ]; then
               DRIVE="NULL"
             fi
@@ -203,7 +203,7 @@ function PARTITION {
         fdisk -l
         ROOT="NULL"
         until ls -a $ROOT &> /dev/null; do
-          read -p "Enter ROOT partition:" ROOT
+          read -p "Enter ROOT partition: " ROOT
           if [ -z "$ROOT" ]; then
             ROOT="NULL"
           fi
@@ -224,7 +224,7 @@ function PARTITION {
           fdisk -l
           EFI="NULL"
           until ls -a $EFI &> /dev/null; do
-            read -p "Enter EFI partition:" EFI
+            read -p "Enter EFI partition: " EFI
             if [ -z "$EFI" ]; then
               EFI="NULL"
             fi
@@ -243,7 +243,7 @@ function PARTITION {
         fdisk -l
         SWAP="NULL"
         until ls -a $SWAP &> /dev/null; do
-          read -p "Enter SWAP partition:" SWAP
+          read -p "Enter SWAP partition: " SWAP
           if [ -z "$SWAP" ]; then
             SWAP="NULL"
           fi
@@ -261,7 +261,7 @@ function PARTITION {
         fdisk -l
         dHOME="NULL"
         until ls -a $dHOME &> /dev/null; do
-          read -p "Enter HOME partition:" dHOME
+          read -p "Enter HOME partition: " dHOME
           if [ -z "dHOME" ]; then
             dHOME="NULL"
           fi
@@ -304,7 +304,7 @@ function PARTITION {
         if [ $RESPONSE == 1 ]; then
           fdisk -l
           "."
-          read -p "Enter target partition:" TARGETPART
+          read -p "Enter target partition: " TARGETPART
           if [ -z "$TARGETPART" ]; then
             TARGETPART="NULL"
           fi
@@ -384,7 +384,7 @@ function PARTITION {
         if [ $RESPONSE == 3 ]; then
           yes="1"
           while [ ! "$yes" == 0 ]; do
-            read -p "Enter target mountpoint:" MOUNTPOINT
+            read -p "Enter target mountpoint: " MOUNTPOINT
             if [ -z "$MOUNTPOINT" ]; then
 	      MOUNTPOINT="NULL"
             fi
@@ -392,7 +392,7 @@ function PARTITION {
           done
         fi
         if [ $RESPONSE == 4 ]; then
-          read -p "Enter mount options:" MOUNTOPTS
+          read -p "Enter mount options: " MOUNTOPTS
           if [ -z "$MOUNTOPTS" ]; then
             MOUNTOPTS="NULL"
           fi
