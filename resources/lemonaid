@@ -117,11 +117,7 @@ function MAIN {
     rm -rf /etc/sudoers
     mv /etc/sudoers.bak /etc/sudoers
     if ls -a /home/aur/aur.log &> /dev/null; then
-      IFS=$'\n'
-      for i in $(cat /home/aur/aur.log); do
-        echo "$i" >> /tmp/lemonaid.log
-      done
-      unset IFS
+      cat /home/aur/aur.log >> /tmp/lemonaid.log
     fi
     rm -rf /home/aur
     userdel aur
