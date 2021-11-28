@@ -73,12 +73,16 @@ function MAIN {
       pacman -S --noconfirm vim &> /dev/null
     fi
   fi
-  APLPRES=$(if ls -a /etc/lemon/lists/aurpackagelist* &> /dev/null; then true; else false; fi)
-  if [ ! $APLPRES == 0 ]; then
+  if ls -a /etc/lemon/lists/aurpackagelist* &> /dev/null; then
+    APLPRES="1"
+  else
+    APLPRES="0"
+  fi
+  if [ ! $APLPRES == 1 ]; then
     echo "Error: AUR is enabled, but no aurpackagelist found!"
     echo "AUR package installation skipped: No aurpackagelist found!" >> /tmp/lemonaid.log
   fi
-  if [ $AURPACKAGELIST == 1 ] && [ $APLPRES == 0 ]; then
+  if [ $AURPACKAGELIST == 1 ] && [ $APLPRES == 1 ]; then
     pacman -S --noconfirm base-devel git &> /dev/null
     useradd aur
     mkdir /home/aur
