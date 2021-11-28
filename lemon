@@ -127,10 +127,10 @@ function PARTITION {
       exit 1
     fi
   fi
-  echo " "
   until [ $RESPONSE == 7 ] && [ $ROOTSET == 1 ] && ([ $BOOTMODE == 1 ] || [ $EFISET == 1 ]); do
     PVALID=("1" "2" "3" "4" "5" "6" "7")
     untilvalidresponse '
+      echo " ";
       echo "                 Drive Setup";
       echo "                 -----------";
       echo "Choose a menu option to proceed with disk setup.";
