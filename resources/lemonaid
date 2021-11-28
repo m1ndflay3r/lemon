@@ -257,7 +257,9 @@ function CONF {
   echo "127.0.1.1     $HOSTNAME.localdomain $HOSTNAME" >> /etc/hosts
   if [ $ROOT == 1 ] || [ $NONROOTUSER == 0 ] || [ $SUDO == 0 ]; then
     echo "Enter new root password"
-    passwd root
+    until passwd root; do
+      echo "Enter new root password"
+    done
     cp -r /etc/skel/.bash* /root/
     echo "PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:$PATH" >> /root/.bashrc
     if which nano &> /dev/null; then
@@ -289,7 +291,9 @@ function CONF {
       fi
     fi
     echo "Enter a new password for $USER: "
-    passwd $USER
+    until passwd $USER; do
+      echo "Enter a new password for $USER: "
+    done
     mkdir -p /home/$USER
     cp -r /etc/skel/.bash* /home/$USER
     echo "PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:$PATH" >> /home/$USER/.bashrc
