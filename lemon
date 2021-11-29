@@ -190,9 +190,9 @@ function PARTITION {
         if ! fdisk $DRIVE; then
           echo "Error: failed to execute fdisk on $DRIVE!"
         fi
-        echo "If you have more drive setup to complete, hit enter."
-        echo "If you are finished, type 'done' to return to the previous menu."
-        read MENU
+        if ! isyes "Do you have more drive setup to complete? (Y/n)"; then
+	  MENU="done"
+	fi
         if [ -z "$MENU" ]; then
           MENU="NULL"
         fi
