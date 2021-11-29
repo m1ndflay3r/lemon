@@ -24,7 +24,6 @@ function isyes {
 # Syntax: isvalidresponse "${INPUTARRAY[@]}"
 #
 function isvalidresponse {
-  RESPONSE="NULL"
   read RESPONSE
   if [ -z "$RESPONSE" ]; then
     RESPONSE="NULL"
