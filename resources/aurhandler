@@ -21,6 +21,7 @@ if [ "$OP" == -S ]; then
     if [ ! -f $PKGB ]; then
       echo "Error: package does not exist by the name $b!"
       echo "Aborting"
+      echo "Failed AUR package: $b (package does not exist!)" >> /home/aur/aur.log
       exit 1
     fi
     #
@@ -64,6 +65,7 @@ if [ "$OP" == -S ]; then
           echo "Trying to install $i from AUR"
           if ! NODEL=1 aurhandler -S $i; then
             echo "FATAL: Unable to install dependency $i!"
+            echo "Failed AUR package: $b (failed to install dependency $i)" >> /home/aur/aur.log
             exit 1
           fi
         fi
@@ -72,6 +74,7 @@ if [ "$OP" == -S ]; then
     if ! makepkg -csi; then
       echo "Error! Aborting"
       cd $HOME
+      echo "Failed AUR package: $b (build failure)" >> /home/aur/aur.log
       exit 1
     fi
     cd $HOME/.aurtool
