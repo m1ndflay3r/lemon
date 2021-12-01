@@ -18,32 +18,36 @@ if [ "$OP" == -S ]; then
     git clone http://aur.archlinux.org/$b.git
     cd $b
     PKGB=./PKGBUILD
+    PKGBUILDBLANK="0"
     if [ ! -f $PKGB ]; then
       echo "Error: package does not exist by the name $b!"
       echo "Aborting"
       echo "Failed AUR package: $b (package does not exist!)" >> /home/aur/aur.log
       false
+      PKGBUILDBLANK="1"
     fi
     #
     # Yes, this is a pointless function that uses up 3 lines unnecessarily. The script didn't behave properly without it. Bash has moods, and Brian Fox hates us all.
     #
     function PKGBUILD {
-    if isyes "Would you like to edit the PKGBUILD? (Y/n)" ; then
-      if which nano &> /dev/null; then
-        nano ./PKGBUILD
-      else
-        if which vim &> /dev/null; then
-          vim ./PKGBUILD
-        else
-          echo "No suitable text editor found!"
-          echo "If one is present on the system, enter its command now (eg: nano, vim, emacs, etc). Otherwise leave blank to skip PKGBUILD editing."
-          read PKGEDIT
-          if [ -v $PKGEDIT ]; then 
-            $PKGEDIT ./PKGBUILD
+      if [ ! $PKGBUILDBLANK == 1 ]; then
+        if isyes "Would you like to edit the PKGBUILD? (Y/n)" ; then
+          if which nano &> /dev/null; then
+            nano ./PKGBUILD
+          else
+            if which vim &> /dev/null; then
+              vim ./PKGBUILD
+            else
+              echo "No suitable text editor found!"
+              echo "If one is present on the system, enter its command now (eg: nano, vim, emacs, etc). Otherwise leave blank to skip PKGBUILD editing."
+              read PKGEDIT
+              if [ -v $PKGEDIT ]; then 
+                $PKGEDIT ./PKGBUILD
+              fi
+            fi
           fi
         fi
       fi
-    fi
     }
     PKGBUILD
     unset makedepends
