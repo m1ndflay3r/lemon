@@ -11,11 +11,6 @@ source /etc/lemon/resources/lemonlib
 OP=$1
 
 if [ "$OP" == -S ]; then
-  if [ -z ${@:2} ]; then
-    echo "Error: -S requires additional input."
-    echo "aurtool --help for help page"
-    exit 1
-  fi
   for b in ${@:2}; do
     cd $HOME
     mkdir .aurtool
