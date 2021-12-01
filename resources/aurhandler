@@ -27,7 +27,7 @@ function aurdephandler {
         if ! aurhandler $i; then
           echo "Unable to install dependency $i!"
           echo "Failed AUR package: $@ (failed to install dependency)" >> /home/aur/aur.log
-          return 1
+          exit 1
         fi
       fi
     fi
@@ -42,7 +42,7 @@ PKGB=./PKGBUILD
 if [ ! -f $PKGB ]; then
   echo "ERROR: Package $@ does not exist!"
   echo "Failed AUR package: $@ (invalid package name)" >> /home/aur/aur.log
-  return 1
+  exit 1
 else
   if isyes "Would you like to edit the PKGBUILD? (Y/n)"; then
     if which nano &> /dev/null; then
