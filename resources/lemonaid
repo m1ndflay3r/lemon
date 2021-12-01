@@ -94,7 +94,7 @@ function MAIN {
     echo 'PATH=/etc/lemon/resources:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:$PATH;
           AURPACKAGES=$(cat /etc/lemon/lists/aurpackagelist*);
           source /etc/lemon/resources/lemonlib;
-          aurhandler $AURPACKAGES;
+          aurhandler -S ${AURPACKAGES[@]};
           if isyes "Install Aurtool? (for AUR package management post-install) (Y/n)"; then
             if ! aurhandler package-query; then
               echo "Failed to install aurtool: package-query failed! (aurtool dependency)";
