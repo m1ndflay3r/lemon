@@ -5,7 +5,7 @@
 
 Both ext4 and btrfs are supported at present, and a sensible btrfs subvolume configuration is included. Btrfs can be enabled via lemon.conf. 
 
-pacman can be used to generate a list of all repository packages installed on any given system, which can then be used as a packagelist for lemon. AUR package support is present, and can be toggled via lemon.conf (enabled by default). 
+pacman can be used to generate a list of all packages installed on any given system, which can then be used as a packagelist for lemon. AUR package support is present, and can be toggled via lemon.conf (enabled by default). 
 
 Note: Only systemd is officially supported. While it's technically possible to use other init systems with lemon, it will not configure them for you automatically. As always, YMMV. 
 <h4>Instructions</h4>
