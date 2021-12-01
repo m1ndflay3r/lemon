@@ -7,60 +7,62 @@ source /etc/lemon/resources/lemonlib
 #  Bash script exists to teach us all a lesson in humility.
 #
 
-mkdir $HOME/.aurtool
-cd $HOME/.aurtool
-git clone http://aur.archlinux.org/$@.git
-cd $@
-PKGB=./PKGBUILD
-if [ ! -f $PKGB ]; then
-  echo "ERROR: Package $@ does not exist!"
-  echo "Failed AUR package: $@ (invalid package name)" >> /home/aur/aur.log
-  cd /home/aur
-  exit 1
-else
-  if isyes "Would you like to edit the PKGBUILD? (Y/n)"; then
-    if which nano &> /dev/null; then
-      nano ./PKGBUILD
-    else
-      vim ./PKGBUILD
-    fi
-  fi
-  unset makedepends
-  unset optdepends
-  unset depends
-  source ./PKGBUILD
-  uDEPS=(${makedepends[@]} ${depends[@]})
-  for i in ${uDEPS[@]}; do
-    i=${i%=*}
-    i=${i%>*}
-    i=${i%<*}
-    DEPS=(${DEPS[@]} $i)
-  done
-  for i in ${DEPS[@]}; do
-    if ! pacman -Ql $i &> /dev/null; then
-      echo "Trying to install $i with pacman (dependency)..."
-      if ! sudo pacman -S --noconfirm --needed $i; then
-        echo "Installing $i with pacman failed!"
-        echo "Trying to install $i from AUR..."
-        if ! aurhandler $i; then
-          echo "Unable to install dependency $i!"
-          echo "Failed AUR package: $@ (failed to install dependency)" >> /home/aur/aur.log
-          cd /home/aur
-          exit 1
-        fi
+for b in ${@}; do
+  mkdir $HOME/.aurtool
+  cd $HOME/.aurtool
+  git clone http://aur.archlinux.org/$b.git
+  cd $b
+  PKGB=./PKGBUILD
+  if [ ! -f $PKGB ]; then
+    echo "ERROR: Package $b does not exist!"
+    echo "Failed AUR package: $b (invalid package name)" >> /home/aur/aur.log
+    cd /home/aur
+    return 1
+  else
+    if isyes "Would you like to edit the PKGBUILD? (Y/n)"; then
+      if which nano &> /dev/null; then
+        nano ./PKGBUILD
+      else
+        vim ./PKGBUILD
       fi
     fi
-  done
-  if ! (makepkg -cs); then
-    echo "ERROR: Package $@ failed to build!"
-    echo "Failed AUR package: $@ (build failure)" >> /home/aur/aur.log
+    unset makedepends
+    unset optdepends
+    unset depends
+    source ./PKGBUILD
+    uDEPS=(${makedepends[@]} ${depends[@]})
+    for i in ${uDEPS[@]}; do
+      i=${i%=*}
+      i=${i%>*}
+      i=${i%<*}
+      DEPS=(${DEPS[@]} $i)
+    done
+    for i in ${DEPS[@]}; do
+      if ! pacman -Ql $i &> /dev/null; then
+        echo "Trying to install $i with pacman (dependency)..."
+        if ! sudo pacman -S --noconfirm --needed $i; then
+          echo "Installing $i with pacman failed!"
+          echo "Trying to install $i from AUR..."
+          if ! aurhandler $i; then
+            echo "Unable to install dependency $i!"
+            echo "Failed AUR package: $@ (failed to install dependency)" >> /home/aur/aur.log
+            cd /home/aur
+            return 1
+          fi
+        fi
+      fi
+    done
+    if ! (makepkg -cs); then
+      echo "ERROR: Package $b failed to build!"
+      echo "Failed AUR package: $b (build failure)" >> /home/aur/aur.log
+      cd /home/aur
+      return 1
+    else
+      sudo pacman -U --noconfirm *.pkg.tar*
+    fi
+    rm -rf $HOME/.aurtool
     cd /home/aur
-    exit 1
-  else
-    sudo pacman -U --noconfirm *.pkg.tar*
+    return 0
   fi
-  rm -rf $HOME/.aurtool
-  cd /home/aur
-  exit 0
-fi
+done
 
