@@ -8,7 +8,7 @@ source /etc/lemon/resources/lemonlib
 #  Yes, there's a lot of redundant BS here. No, you can't fix it easily, as the script breaks without it because this is bash so of course it does.
 #  Yes, this should be in lemonlib as a function. No, it didn't work when I did that for no reason other than Brian Fox is a fucking sadist.
 #
-#  Don't believe me? Try it for yourself then I fucking dare you. You'll never be the same after you're through, though. Nobody ever is. 
+#  Don't believe me? Try it for yourself then I dare you. You'll never be the same after you're through, though. Nobody ever is. 
 #
 #
 #  May Brian Fox have mercy on your soul. 
