@@ -32,9 +32,6 @@ if [ "$OP" == -S ]; then
       PKGBUILDBLANK="1"
       false
     fi
-    #
-    # Yes, this is a pointless function that uses up 3 lines unnecessarily. The script didn't behave properly without it. Bash has moods, and Brian Fox hates us all.
-    #
     function PKGBUILD {
       if [ ! $PKGBUILDBLANK == 1 ]; then
         if isyes "Would you like to edit the PKGBUILD? (Y/n)" ; then
