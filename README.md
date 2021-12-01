@@ -38,7 +38,7 @@ either manually write a packagelist **with each package on its own line**, or us
 If you generate a packagelist from a preexisting system, you will need to manually copy it to the **lists** folder within lemon on the arch install iso.
 
 
-Note: If you have any AUR packages installed, they will be added to the auto-generated list as well. In this case, it is highly recommended to enable both AURPACKAGELIST and RETRYASAUR in lemon.conf. 
+Note: If you have any AUR packages installed, they will be added to the auto-generated list as well. In this case, it is highly recommended to enable both AURPACKAGELIST and RETRYASAUR in lemon.conf (both are enabled by default). 
 
 
 .
@@ -80,9 +80,9 @@ Launch lemon and begin the installation!
 .
 <h4><i>Optional: AUR packages</i></h4>
 
-AUR package support exists, and can be enabled via the AURPACKAGELIST flag in lemon.conf.
+AUR package support exists, and can be enabled via the AURPACKAGELIST flag in lemon.conf. (enabled by default)
 
-To use this feature, create the file *aurpackagelist* in the same format as a regular package list (but using aur packages, obviously).
+To use this feature, create the file *aurpackagelist* in the same format as a regular packagelist (but using aur packages, obviously).
 
 
 *eg:*
