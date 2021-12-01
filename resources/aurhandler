@@ -6,7 +6,7 @@ source /etc/lemon/resources/lemonlib
 #  AUR package installation logic. This should be in lemonlib as a function, but doesn't work when I put it there because Brian Fox is a fucking sadist.
 #  Bash script exists to teach us all a lesson in humility.
 #
-#  edit: still didn't work. It's now a copy-paste from aurtool because reasons. 
+# 
 
 OP=$1
 
@@ -23,8 +23,8 @@ if [ "$OP" == -S ]; then
       echo "Error: package does not exist by the name $b!"
       echo "Aborting"
       echo "Failed AUR package: $b (package does not exist!)" >> /home/aur/aur.log
-      false
       PKGBUILDBLANK="1"
+      false
     fi
     #
     # Yes, this is a pointless function that uses up 3 lines unnecessarily. The script didn't behave properly without it. Bash has moods, and Brian Fox hates us all.
@@ -68,30 +68,29 @@ if [ "$OP" == -S ]; then
           if ! sudo pacman -S --noconfirm --needed $i; then
             echo "Installing $i with pacman failed"
             echo "Trying to install $i from AUR"
-            if ! NODEL=1 aurhandler -S $i; then
+            if ! aurhandler -S $i; then
               echo "FATAL: Unable to install dependency $i!"
               echo "Failed AUR package: $b (failed to install dependency $i)" >> /home/aur/aur.log
+              DEPBROKEN="1"
               false
+            else
+              DEPBROKEN="0"
             fi
           fi
         fi
       done
-      if ! makepkg -csi || false; then
-        echo "Error! Aborting"
-        cd $HOME
-        echo "Failed AUR package: $b (build failure)" >> /home/aur/aur.log
-        false
+      if [ -z "$DEPBROKEN" ]; then
+        DEPBROKEN="0"
+      fi
+      if [ ! $DEPBROKEN == 1 ]; then
+        if ! makepkg -csi || false; then
+          echo "Error! Aborting"
+          cd $HOME
+          echo "Failed AUR package: $b (build failure)" >> /home/aur/aur.log
+          false
+        fi
       fi
     fi
     cd $HOME/.aurtool
   done
-  if [ -z "$NODEL" ]; then
-    NODEL="1"
-  fi
-  if [ ! "$NODEL" == 1 ]; then
-    if isyes "Build files and / or built packages are stored in .aurtool in your home directory. Would you like to delete them? (Y/n)"; then
-      echo "Cleaning up.."
-      rm -rf $HOME/.aurtool
-    fi
-  fi
 fi
