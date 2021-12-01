@@ -67,7 +67,7 @@ if [ "$OP" == -S ]; then
         if ! sudo pacman -S --noconfirm --needed $i; then
           echo "Installing $i with pacman failed"
           echo "Trying to install $i from AUR"
-          if ! NODEL=1 aurtool -S $i; then
+          if ! NODEL=1 aurhandler -S $i; then
             echo "FATAL: Unable to install dependency $i!"
             exit 1
           fi
