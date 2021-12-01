@@ -84,20 +84,21 @@ function MAIN {
   fi
   if [ $AURPACKAGELIST == 1 ] && [ $APLPRES == 1 ]; then
     pacman -S --noconfirm base-devel git &> /dev/null
+    chmod 755 /etc/lemon/resources/aurhandler
     useradd aur
     mkdir /home/aur
     cp /etc/skel/.bash* /home/aur/
     chown -R aur:aur /home/aur
     cp /etc/sudoers /etc/sudoers.bak
     echo "aur ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-    echo 'PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:$PATH;
+    echo 'PATH=/etc/lemon/resources:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:$PATH;
           AURPACKAGES=$(cat /etc/lemon/lists/aurpackagelist*);
           source /etc/lemon/resources/lemonlib;
           for i in $AURPACKAGES; do
-            (aurinst $i);
+            aurhandler $i;
           done;
           if isyes "Install Aurtool? (for AUR package management post-install) (Y/n)"; then
-            if ! aurinst package-query; then
+            if ! aurhandler package-query; then
               echo "Failed to install aurtool: package-query failed! (aurtool dependency)";
               echo "Aurtool failed: package-query failed to install" >> /home/aur/aur.log;
             else
