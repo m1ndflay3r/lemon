@@ -50,36 +50,38 @@ if [ "$OP" == -S ]; then
       fi
     }
     PKGBUILD
-    unset makedepends
-    unset optdepends
-    unset depends
-    source ./PKGBUILD
-    uDEPS=(${makedepends[@]} ${depends[@]})
-    for i in ${uDEPS[@]}; do
-      i=${i%=*}
-      i=${i%>*}
-      i=${i%<*}
-      DEPS=(${DEPS[@]} $i)
-    done
-    for i in ${DEPS[@]}; do
-      if ! pacman -Ql $i &> /dev/null; then
-        echo "Trying to install $i with pacman (dependency)"
-        if ! sudo pacman -S --noconfirm --needed $i; then
-          echo "Installing $i with pacman failed"
-          echo "Trying to install $i from AUR"
-          if ! NODEL=1 aurhandler -S $i; then
-            echo "FATAL: Unable to install dependency $i!"
-            echo "Failed AUR package: $b (failed to install dependency $i)" >> /home/aur/aur.log
-            false
+    if [ ! $PKGBUILDBLANK == 1 ]; then
+      unset makedepends
+      unset optdepends
+      unset depends
+      source ./PKGBUILD
+      uDEPS=(${makedepends[@]} ${depends[@]})
+      for i in ${uDEPS[@]}; do
+        i=${i%=*}
+        i=${i%>*}
+        i=${i%<*}
+        DEPS=(${DEPS[@]} $i)
+      done
+      for i in ${DEPS[@]}; do
+        if ! pacman -Ql $i &> /dev/null; then
+          echo "Trying to install $i with pacman (dependency)"
+          if ! sudo pacman -S --noconfirm --needed $i; then
+            echo "Installing $i with pacman failed"
+            echo "Trying to install $i from AUR"
+            if ! NODEL=1 aurhandler -S $i; then
+              echo "FATAL: Unable to install dependency $i!"
+              echo "Failed AUR package: $b (failed to install dependency $i)" >> /home/aur/aur.log
+              false
+            fi
           fi
         fi
+      done
+      if ! makepkg -csi || false; then
+        echo "Error! Aborting"
+        cd $HOME
+        echo "Failed AUR package: $b (build failure)" >> /home/aur/aur.log
+        false
       fi
-    done
-    if ! makepkg -csi || false; then
-      echo "Error! Aborting"
-      cd $HOME
-      echo "Failed AUR package: $b (build failure)" >> /home/aur/aur.log
-      false
     fi
     cd $HOME/.aurtool
   done
