@@ -302,6 +302,15 @@ function CONF {
     chown $USER:$USER /home/$USER
     chown $USER:$USER /home/$USER/.*
   fi
+  if [ $POSTINSTALLSCRIPTS == 1 ]; then
+    PISCRIPTS=$(ls -a /etc/lemon/postinstall/)
+    PISCRIPTS=${PISCRIPTS:4}
+    for i in $PISCRIPTS; do
+      if [ ! $i == readme ]; then
+        ./etc/lemon/postinstall/$i || echo "script $i failed!" >> /tmp/lemonaid.log
+      fi
+    done
+  fi
   LOG=/tmp/lemonaid.log
   if [ -f "$LOG" ]; then
     echo "Process completed sucessfuly, but errors were detected"
