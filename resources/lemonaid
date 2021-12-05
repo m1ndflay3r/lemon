@@ -306,6 +306,7 @@ function CONF {
     PISCRIPTS=$(find /etc/lemon/postinstall/)
     for i in $PISCRIPTS; do
       if file $i | grep executable &> /dev/null; then
+        chmod 755 $i
         ./$i || echo "script $i failed!" >> /tmp/lemonaid.log
       fi
     done
