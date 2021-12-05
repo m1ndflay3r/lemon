@@ -1,5 +1,5 @@
 <h4>Introduction</h4>
-------------------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 *lemon* is an installer for Arch Linux that aims to be able to clone just about any Arch installation (or install a completely fresh one!). 
 
@@ -96,6 +96,12 @@ To use this feature, create the file *aurpackagelist* in the same format as a re
 
 
 .
+<h5><i>Optional: post install scripts</i></h5>
+
+Post install scripts can be added to lemon/postinstall, and will be executed at the very end of the install before exiting the chroot step. 
+
+This feature can be enabled via the POSTINSTALLSCRIPTS flag in lemon.conf.
+
 
 
 *Note: Only vanilla Arch Linux is officially supported. while this may work with arch-based distros such as manjaro, this is not officially supported (and will definitely require tweaking lemon.conf to prevent breakage). Your mileage may vary.*
