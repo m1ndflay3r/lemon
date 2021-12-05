@@ -303,10 +303,10 @@ function CONF {
     chown $USER:$USER /home/$USER/.*
   fi
   if [ $POSTINSTALLSCRIPTS == 1 ]; then
-    PISCRIPTS=$(ls -a /etc/lemon/postinstall/)
+    PISCRIPTS=$(find /etc/lemon/postinstall/)
     for i in $PISCRIPTS; do
       if file $i | grep executable &> /dev/null; then
-        ./etc/lemon/postinstall/$i || echo "script $i failed!" >> /tmp/lemonaid.log
+        ./$i || echo "script $i failed!" >> /tmp/lemonaid.log
       fi
     done
   fi
