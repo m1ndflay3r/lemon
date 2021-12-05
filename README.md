@@ -98,7 +98,7 @@ To use this feature, create the file *aurpackagelist* in the same format as a re
 .
 <h5><i>Optional: post install scripts</i></h5>
 
-Post install scripts can be added to lemon/postinstall, and will be executed at the very end of the install before exiting the chroot step. 
+Post install scripts can be added to /path/to/lemon/directory/postinstall, and will be executed at the very end of the install before exiting the chroot step. 
 
 This feature can be enabled via the POSTINSTALLSCRIPTS flag in lemon.conf.
 
