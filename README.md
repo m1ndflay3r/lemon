@@ -104,5 +104,8 @@ This feature can be enabled via the POSTINSTALLSCRIPTS flag in lemon.conf.
 
 
 
+.
+
+
 *Note: Only vanilla Arch Linux is officially supported. while this may work with arch-based distros such as manjaro, this is not officially supported (and will definitely require tweaking lemon.conf to prevent breakage). Your mileage may vary.*
 
