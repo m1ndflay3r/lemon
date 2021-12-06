@@ -96,7 +96,7 @@ To use this feature, create the file *aurpackagelist* in the same format as a re
 
 
 .
-<h5><i>Optional: post install scripts</i></h5>
+<h4><i>Optional: post install scripts</i></h4>
 
 Post install scripts can be added to /path/to/lemon/directory/postinstall, and will be executed at the very end of the install before exiting the chroot step. 
 
