@@ -43,6 +43,9 @@ if [ "$OP" == -S ]; then
             echo "No suitable text editor found!"
             echo "If one is present on the system, enter its command now (eg: nano, vim, emacs, etc). Otherwise leave blank to skip PKGBUILD editing."
             read EDITOR
+            if [ -z "$EDITOR" ]; then
+              EDITOR="NULL"
+            fi
             if [ -v $EDITOR ]; then
               $EDITOR ./PKGBUILD
             fi
