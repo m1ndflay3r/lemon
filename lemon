@@ -64,7 +64,7 @@ function PREP {
     else
       echo "Sorting mirrors with reflector."
       echo "This may take a while. Please wait." 
-      reflector --latest 50 --protocol http --protocol https --sort rate --save /etc/pacman.d/mirrorlist
+      reflector --latest $REFLECTORCOUNT --protocol http --protocol https --sort rate --save /etc/pacman.d/mirrorlist
       echo "Resyncing pacman with updated mirrorlist"
       if ! pacman -Sy; then
         echo "Failed to resync pacman after reflector sorting! Check your mirrorlist"
@@ -106,6 +106,7 @@ function PARTITION {
   EFISET="0"
   SWAPSET="0"
   HOMESET="0"
+  ADDMOUNTS="0"
   if ls -a /tmp/mounts.lemon &> /dev/null; then
     IFS=$'\n'
     for i in $(cat /tmp/mounts.lemon); do
@@ -127,8 +128,8 @@ function PARTITION {
       exit 1
     fi
   fi
-  until [ $RESPONSE == 7 ] && [ $ROOTSET == 1 ] && ([ $BOOTMODE == 1 ] || [ $EFISET == 1 ]); do
-    PVALID=("1" "2" "3" "4" "5" "6" "7")
+  until [ $RESPONSE == 9 ] && [ $ROOTSET == 1 ] && ([ $BOOTMODE == 1 ] || [ $EFISET == 1 ]); do
+    PVALID=("1" "2" "3" "4" "5" "6" "7" "8" "9")
     untilvalidresponse '
       echo " ";
       echo "                 Drive Setup";
@@ -149,7 +150,7 @@ function PARTITION {
         fi;
       fi;
       echo "...................................................................";
-      echo "1: Drive setup (fdisk)";
+      echo "1: Drive setup ($DISKPART)";
       echo "2: Set ROOT partition";
       if [ $BOOTMODE == 0 ]; then
         echo "3: Set  EFI partition";
@@ -159,9 +160,11 @@ function PARTITION {
       echo "4: Set SWAP partition (optional)";
       echo "5: Set HOME partition (optional)";
       echo "6: Set additional mountpoints (optional)";
-      echo "7: Finish"
+      echo "7: View change summary"
+      echo "8: Start over"
+      echo "9: Finish"
     ' "${PVALID[@]}"
-    if ([ $RESPONSE == 7 ] && [ ! $ROOTSET == 1 ]) || ([ $RESPONSE == 7 ] && [ $BOOTMODE == 0 ] && [ ! $EFISET == 1 ]); then
+    if ([ $RESPONSE == 9 ] && [ ! $ROOTSET == 1 ]) || ([ $RESPONSE == 9 ] && [ $BOOTMODE == 0 ] && [ ! $EFISET == 1 ]); then
       echo "Error: Essential partition not set! (either ROOT partition not set, or EFI partition not set if running in EFI mode)"
       RESPONSE="0"
       sleep 1
@@ -187,10 +190,10 @@ function PARTITION {
           done
           isyes "You have entered $DRIVE. Is this correct? (Y/n)"
         done
-        if ! fdisk $DRIVE; then
-          echo "Error: failed to execute fdisk on $DRIVE!"
+        if ! $DISKPART $DRIVE; then
+          echo "Error: failed to execute $DISKPART on $DRIVE!"
         fi
-        if ! isyes "Run fdisk on another drive? (Y/n)"; then
+        if ! isyes "Run $DISKPART on another drive? (Y/n)"; then
 	  MENU="done"
 	fi
         if [ -z "$MENU" ]; then
@@ -491,6 +494,49 @@ function PARTITION {
         fi
       done
     fi
+    if [ $RESPONSE == 7 ]; then
+      if [ $ROOTSET == 1 ]; then
+        echo "Root partition: $ROOT"
+      fi
+      if [ $EFISET == 1 ]; then
+        echo "EFI partition:  $EFI"
+      fi
+      if [ $SWAPSET == 1 ]; then
+        echo "SWAP partition: $SWAP"
+      fi
+      if [ $HOMESET == 1 ]; then
+        echo "HOME partition: $dHOME"
+      fi
+      if [ $ADDMOUNTS == 1 ]; then
+        echo "-----------------"
+        echo "Additional mounts"
+        echo "-----------------"
+        ISF=$'\n'
+        for i in cat /tmp/mountpoints.lemon; do
+          echo "$i"
+        done
+        unset ISF
+      fi
+      if [ ! $ROOTSET == 1 ] && [ ! $EFISET == 1 ] && [ ! $SWAPSET == 1 ] && [ ! $HOMESET == 1 ] && [ ! $ADDMOUNTS == 1 ]; then
+        echo "All fields are empty."
+      fi
+    fi
+    if [ $RESPONSE == 8 ]; then
+      if isyes "Are you sure you wish to clear all data? (Y/n)"; then
+        ROOT="NULL"
+        ROOTSET="0"
+        EFI="NULL"
+        EFISET="0"
+        SWAP="NULL"
+        SWAPSET="0"
+        dHOME="NULL"
+        HOMESET="0"
+        rm -rf /tmp/mountpoints.lemon
+        rm -rf /tmp/mounts.lemon
+        rm -rf /tmp/dmounts.lemon
+        ADDMOUNTS="0"
+      fi
+    fi
   done
   echo "."
   echo "Formatting..."
@@ -614,9 +660,6 @@ function PARTITION {
       fi
       echo "/tmp/mnt/home" >> /tmp/mounts.lemon
     fi
-  fi
-  if [ -z "$ADDMOUNTS" ]; then
-    ADDMOUNTS="0"
   fi
   if [ $ADDMOUNTS == 1 ]; then
     IFS=$'\n'
