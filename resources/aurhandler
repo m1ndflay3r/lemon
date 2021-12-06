@@ -1,18 +1,19 @@
 #!/usr/bin/env bash
 
 source /etc/lemon/resources/lemonlib
+source /etc/lemon/lemon.conf
 
 #
-#  AUR package installation logic. 
-#  
+#  AUR package installation logic.
+#
 #  Yes, there's a lot of redundant BS here. No, you can't fix it easily, as the script breaks without it because this is bash so of course it does.
 #  Yes, this should be in lemonlib as a function. No, it didn't work when I did that for no reason other than Brian Fox is a fucking sadist.
 #
-#  Don't believe me? Try it for yourself then I dare you. You'll never be the same after you're through, though. Nobody ever is. 
+#  Don't believe me? Try it for yourself then I dare you. You'll never be the same after you're through, though. Nobody ever is.
 #
 #
-#  May Brian have mercy on your soul. 
-# 
+#  May Brian have mercy on your soul.
+#
 
 OP=$1
 
@@ -35,19 +36,18 @@ if [ "$OP" == -S ]; then
     function PKGBUILD {
       if [ ! $PKGBUILDBLANK == 1 ]; then
         if isyes "Would you like to edit the PKGBUILD? (Y/n)" ; then
-          if which nano &> /dev/null; then
-            nano ./PKGBUILD
-          else
-            if which vim &> /dev/null; then
-              vim ./PKGBUILD
-            else
-              echo "No suitable text editor found!"
-              echo "If one is present on the system, enter its command now (eg: nano, vim, emacs, etc). Otherwise leave blank to skip PKGBUILD editing."
-              read PKGEDIT
-              if [ -v $PKGEDIT ]; then 
-                $PKGEDIT ./PKGBUILD
-              fi
+          if ! which $EDITOR &> /dev/null; then
+            EDITOR="vim"
+          fi
+          if ! which $EDITOR &> /dev/null; then
+            echo "No suitable text editor found!"
+            echo "If one is present on the system, enter its command now (eg: nano, vim, emacs, etc). Otherwise leave blank to skip PKGBUILD editing."
+            read EDITOR
+            if [ -v $EDITOR ]; then
+              $EDITOR ./PKGBUILD
             fi
+          else
+            $EDITOR ./PKGBUILD
           fi
         fi
       fi
