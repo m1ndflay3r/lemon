@@ -191,7 +191,7 @@ function CONF {
         fi
       done
     fi
-    cd $REGION
+    cd $REGION &> /dev/null
     ls -a
     read -p "Enter your city: " CITY
     if [ -z "$CITY" ]; then
