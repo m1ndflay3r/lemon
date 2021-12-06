@@ -311,7 +311,7 @@ function PARTITION {
           echo "3 - Set target partition mountpoint";
           echo "4 - Set mountpoint options";
           echo "5 - List changes to commit";
-          echo "6 - Clear data";
+          echo "6 - Start over";
           echo "7 - Commit changes"
         ' "${dVALID[@]}"
         if [ $RESPONSE == 1 ]; then
@@ -429,7 +429,7 @@ function PARTITION {
           fi
         fi
         if [ $RESPONSE == 6 ]; then
-          if isyes "Are you sure you wish to clear data? (Y/n)"; then
+          if isyes "Are you sure you wish to start over? (Y/n)"; then
             TARGETPART="NULL"
             TPFORMAT="0"
             FORMATOPTS="NULL"
