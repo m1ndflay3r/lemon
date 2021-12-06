@@ -128,6 +128,10 @@ function PARTITION {
       exit 1
     fi
   fi
+  if ! which $DISKPART &> /dev/null; then
+    dDISKPART="$DISKPART"
+    DISKPART="fdisk"
+  fi
   until [ $RESPONSE == 9 ] && [ $ROOTSET == 1 ] && ([ $BOOTMODE == 1 ] || [ $EFISET == 1 ]); do
     PVALID=("1" "2" "3" "4" "5" "6" "7" "8" "9")
     untilvalidresponse '
@@ -148,6 +152,9 @@ function PARTITION {
           echo "---------------------------------";
           exit 1;
         fi;
+      fi;
+      if [ ! -z $dDISKPART ]; then
+        echo "Note: $dDISKPART not found in PATH. Defaulting on fdisk.";
       fi;
       echo "...................................................................";
       echo "1: Drive setup ($DISKPART)";
