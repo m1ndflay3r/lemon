@@ -33,6 +33,26 @@ function PREP {
   fi
 }
 
+# Ensures we have a working editor
+if [ $EDITOR == vi ]; then
+  EDITOR="vim"
+fi
+if ! which $EDITOR &> /dev/null; then
+  echo "Fetching $EDITOR..."
+  if ! pacman -S --needed --noconfirm $EDITOR; then
+    echo "Error: failed to install $EDITOR!"
+    echo "Defaulting on vim for editor."
+    echo "Failed to fetch $EDITOR using pacman. Defaulting on vim for this installation." >> /tmp/lemonaid.log
+    EDITOR="vim"
+    if ! pacman -S --needed --noconfirm vim; then
+      echo "Failed to fetch vim!"
+      echo "Editor will be disabled for this installation."
+      echo "Failed to fetch vim! Editor will be disabled for this installation." >> /tmp/lemonaid.log
+      EDITOR="cat"
+    fi
+  fi
+fi
+
 # Main installation procedure. Installs packages from packagelist and enables services from servicelist.
 # Failed operations are logged in /tmp/lemonaid.log.
 function MAIN {
@@ -66,11 +86,6 @@ function MAIN {
     if [ $SERVICEERRORS == 1 ]; then
       echo "Servicelist complete, but some services failed to enable properly."
       echo "Offending services are listed in /tmp/lemonaid.log"
-    fi
-  fi
-  if ! which nano &> /dev/null; then
-    if ! which vim &> /dev/null; then
-      pacman -S --noconfirm vim &> /dev/null
     fi
   fi
   if ls -a /etc/lemon/lists/aurpackagelist* &> /dev/null; then
@@ -307,7 +322,7 @@ function CONF {
     for i in $PISCRIPTS; do
       if file $i | grep executable &> /dev/null; then
         chmod 755 $i
-        ./$i || echo "script $i failed!" >> /tmp/lemonaid.log
+        . $i || echo "script $i failed!" >> /tmp/lemonaid.log
       fi
     done
   fi
@@ -315,11 +330,7 @@ function CONF {
   if [ -f "$LOG" ]; then
     echo "Process completed sucessfuly, but errors were detected"
     if isyes "Would you like to read the error log? (Y/n)"; then
-      if which nano &> /dev/null; then
-        nano $LOG
-      else
-        vim $LOG
-      fi
+      $EDITOR $LOG
       echo "."
     fi
   fi
