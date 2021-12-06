@@ -154,6 +154,8 @@ function PARTITION {
         fi;
       fi;
       if [ ! -z $dDISKPART ]; then
+        echo " ";
+	echo " ";
         echo "Note: $dDISKPART not found in PATH. Defaulting on fdisk.";
       fi;
       echo "...................................................................";
