@@ -27,7 +27,7 @@ echo "| |/ _ \  _   _ \ / _ \|  _ \  "
 echo "| |  __/ | | | | | (_) | | | | "
 echo "|_|\___|_| |_| |_|\___/|_| |_| "
 echo "                               "
-echo "         By M1ndflay3r         "
+echo "         By M1ndFlay3r         "
 echo "- - - - - - - - - - - - - - - -"
 
 source "${BASH_SOURCE%/*}/lemon.conf"
