@@ -35,6 +35,13 @@ source "${BASH_SOURCE%/*}/resources/lemonlib"
 STARTDIR=$(pwd)
 
 
+##
+## Prompts user to edit lemon.conf prior to install
+##
+if isyes "Do you wish to edit lemon.conf prior to install? (Y/n)"; then
+  $EDITOR "${BASH_SOURCE%/*}/lemon.conf"
+  source "${BASH_SOURCE%/*}/lemon.conf"
+fi
 
 ##
 ## Tests network connectivity, readies pacman, sets keyboard layout if needed, and detects whether the system is BIOS or UEFI
