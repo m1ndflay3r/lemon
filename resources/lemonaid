@@ -19,16 +19,16 @@ source /tmp/info.lemon
 # Readies pacman (adds multilib if enabled, initializes keyring, and syncs).
 function PREP {
   if [ $MULTILIB == 1 ]; then
-    echo "Enabling multilib and syncing pacman..."
+    ctext cyan std "Enabling multilib and syncing pacman..."
     echo "[multilib]" >> /etc/pacman.conf
     echo "Include = /etc/pacman.d/mirrorlist" >> /etc/pacman.conf
   else
-    echo "Syncing pacman..."
+    ctext cyan std "Syncing pacman..."
   fi
   pacman-key --init
   pacman-key --populate archlinux
   if ! pacman -Sy; then
-    echo "Failed to sync pacman on install target! Check your internet settings, then restart lemon"
+    ctext red std "Failed to sync pacman on install target! Check your internet settings, then restart lemon"
     exit 1
   fi
 }
@@ -38,15 +38,15 @@ if [ $EDITOR == vi ]; then
   EDITOR="vim"
 fi
 if ! which $EDITOR &> /dev/null; then
-  echo "Fetching $EDITOR..."
+  ctext cyan std "Fetching $EDITOR..."
   if ! pacman -S --needed --noconfirm $EDITOR; then
-    echo "Error: failed to install $EDITOR!"
-    echo "Defaulting on vim for editor."
+    ctext magenta std "Error: failed to install $EDITOR!"
+    ctext magenta std "Defaulting on vim for editor."
     echo "Failed to fetch $EDITOR using pacman. Defaulting on vim for this installation." >> /tmp/lemonaid.log
     EDITOR="vim"
     if ! pacman -S --needed --noconfirm vim; then
-      echo "Failed to fetch vim!"
-      echo "Editor will be disabled for this installation."
+      ctext magenta std "Failed to fetch vim!"
+      ctext magenta std "Editor will be disabled for this installation."
       echo "Failed to fetch vim! Editor will be disabled for this installation." >> /tmp/lemonaid.log
       EDITOR="cat"
     fi
@@ -70,8 +70,8 @@ function MAIN {
       fi
     done
     if [ $PACMANERRORS == 1 ]; then
-      echo "Packagelist installation complete, but errors were detected."
-      echo "Offending packages are listed in /tmp/lemonaid.log"
+      ctext magenta std "Packagelist installation complete, but errors were detected."
+      ctext magenta std "Offending packages are listed in /tmp/lemonaid.log"
     fi
   fi
   if [ $SERVICELIST == 1 ]; then
@@ -84,8 +84,8 @@ function MAIN {
       fi
     done
     if [ $SERVICEERRORS == 1 ]; then
-      echo "Servicelist complete, but some services failed to enable properly."
-      echo "Offending services are listed in /tmp/lemonaid.log"
+      ctext magenta std "Servicelist complete, but some services failed to enable properly."
+      ctext magenta std "Offending services are listed in /tmp/lemonaid.log"
     fi
   fi
   if ls -a /etc/lemon/lists/aurpackagelist* &> /dev/null; then
@@ -94,7 +94,7 @@ function MAIN {
     APLPRES="0"
   fi
   if [ ! $APLPRES == 1 ]; then
-    echo "Error: AUR is enabled, but no aurpackagelist found!"
+    ctext magenta std "Error: AUR is enabled, but no aurpackagelist found!"
     echo "AUR package installation skipped: No aurpackagelist found!" >> /tmp/lemonaid.log
   fi
   if [ $AURPACKAGELIST == 1 ] && [ $APLPRES == 1 ]; then
@@ -110,14 +110,20 @@ function MAIN {
           AURPACKAGES=$(cat /etc/lemon/lists/aurpackagelist*);
           source /etc/lemon/resources/lemonlib;
           aurhandler -S ${AURPACKAGES[@]};
-          if isyes "Install Aurtool? (for AUR package management post-install) (Y/n)"; then
-            if ! pacman -Ql package-query &> /dev/null || aurhandler -S package-query; then
-              echo "Failed to install aurtool: package-query failed! (aurtool dependency)";
-              echo "Aurtool failed: package-query failed to install" >> /home/aur/aur.log;
-            else
+          if isyes "$(ctext cyan nnl "Install Aurtool? (for AUR package management post-install) (Y/n)")"; then
+            PKGQUERYFAILED="0";
+            if ! which package-query &> /dev/null; then
+              aurhandler -S package-query;
+              if ! which package-query &> /dev/null; then
+                ctext magenta std "Failed to install aurtool: package-query failed! (aurtool dependency)";
+                echo "Aurtool failed: package-query failed to install" >> /home/aur/aur.log;
+                PKGQUERYFAILED="1";
+              fi;
+            fi;
+            if [ ! $PKGQUERYFAILED == 1 ]; then
               cd $HOME;
               if ! git clone http://github.com/m1ndflay3r/aurtool; then
-                echo "Failed to fetch aurtool!";
+                ctext magenta std "Failed to fetch aurtool!";
                 echo "Aurtool failed: Failed to fetch from repository" >> /home/aur/aur.log;
               else
                 sudo mv aurtool/aurtool /bin/;
@@ -136,8 +142,8 @@ function MAIN {
     rm -rf /home/aur
     userdel aur
     if cat /tmp/lemonaid.log | grep AUR &> /dev/null; then
-      echo "Aurpackagelist installation complete, but errors were detected."
-      echo "Offending AUR packages are listed in /tmp/lemonaid.log"
+      ctext magenta std "Aurpackagelist installation complete, but errors were detected."
+      ctext magenta std "Offending AUR packages are listed in /tmp/lemonaid.log"
     fi
   fi
 }
@@ -146,7 +152,7 @@ function MAIN {
 # Installs / configures both grub and refind depending on flags in lemon.conf.
 function BOOT {
   if [ $GRUB == 1 ]; then
-    echo "Installing grub..."
+    ctext cyan std "Installing grub..."
     sleep 0.5
     ln -s /hostlvm /run/lvm
     pacman -S --needed --noconfirm grub freetype2 fuse2 dosfstools os-prober mtools libisoburn
@@ -170,7 +176,7 @@ function BOOT {
       fi
     fi
   else
-    echo "Proceeding without grub."
+    ctext cyan std "Proceeding without grub."
     ln -s /hostlvm /run/lvm
   fi
   if [ $REFIND == 1 ] && [ $BOOTMODE == 0 ]; then
@@ -181,7 +187,7 @@ function BOOT {
       echo "Refind install failed!" >> /tmp/lemonaid.log
     fi
   else
-    echo "Proceeding without rEFInd"
+    ctext cyan std "Proceeding without rEFInd"
   fi
 }
 
@@ -192,87 +198,223 @@ function CONF {
   while [ ! "$yes" == 0 ]; do
     unset CITY
     cd /usr/share/zoneinfo
+    ctext blue
     ls -a
-    read -p "Enter your region: " REGION
+    ctext reset
+    read -p "$(ctext cyan nnl "Enter your region: ")" REGION
     if [ -z "$REGION" ]; then
       REGION="NULL"
     fi
     if ! cd $REGION; then
       until cd $REGION; do
-        echo "Invalid region!"
-        read -p "Enter your region: " REGION
+        ctext magenta std "Invalid region!"
+        read -p "$(ctext cyan nnl "Enter your region: ")" REGION
         if [ -z "$REGION" ]; then
           REGION="NULL"
         fi
       done
     fi
     cd $REGION &> /dev/null
+    ctext blue
     ls -a
-    read -p "Enter your city: " CITY
+    ctext reset
+    read -p "$(ctext cyan nnl "Enter your city: ")" CITY
     if [ -z "$CITY" ]; then
       CITY="NULL"
     fi
     if ! ls -a /usr/share/zoneinfo/$REGION/$CITY &> /dev/null; then
       until ls -a /usr/share/zoneinfo/$REGION/$CITY &> /dev/null; do
-        echo "Error: $CITY does not exist in filesystem!"
-        read -p "Enter your city: " CITY
+        ctext magenta std "Error: $CITY does not exist in filesystem!"
+        read -p "$(ctext cyan nnl "Enter your city: ")" CITY
         if [ -z "$CITY" ]; then
           CITY="NULL"
         fi
       done
     fi
-    isyes "You have entered $REGION and $CITY - is this correct? (Y/n)"
+    isyes "$(ctext cyan nnl "You have entered $(ctext green)$REGION $(ctext cyan)and $(ctext green)$CITY $(ctext cyan)- is this correct? (Y/n)")"
   done
   ln -sf /usr/share/zoneinfo/$REGION/$CITY /etc/localtime
   hwclock --systohc
   yes="1"
-  while [ ! "$yes" == 0 ]; do
-    unset ISO
-    unset UTF
-    until [ ! -z "$ISO" ]; do
-      read -p "Please enter your preferred ISO locale (eg: en_US): " ISO
+  ctext green std "                                         -Locale Setup-"
+  ctext green std "                                         --------------"
+  echo " "
+  ctext cyan std "Use the search function to find any needed locales (eg: search en_US to find any locales fitting that term)"
+  ctext cyan std "After searching for a locale, you'll be presented with a menu to choose which found locales to add."
+  ctext cyan std "After you're finished adding any needed locales, type 'done' from the search menu to continue."
+  ctext green std "-----------------------------------------------------------------------------------------------------------"
+  until false; do
+    IFS=$'\r\n' GLOBIGNORE='*' command eval 'INITIALREAD=($(cat /etc/locale.gen))'
+    COUNT="0"
+    for i in "${INITIALREAD[@]}"; do
+      COUNT=$((COUNT + 1))
+      if [ $COUNT -ge 24 ]; then
+        CLEANEDREAD+=("$i")
+      fi
     done
-    until [ ! -z "$UTF" ]; do
-      read -p "Please enter your preferred UTF locale (eg: en_US.UTF-8): " UTF
+    RESPONSE="NULL"
+    until [ $RESPONSE == done ]; do
+      echo " "
+      read -p "$(ctext cyan nnl "Enter locale search query (or type 'done' to finish locale setup): ")" RESPONSE
+      if [ -z "$RESPONSE" ]; then
+        RESPONSE="NULL"
+      fi
+      echo " "
+      if [ ! $RESPONSE == done ]; then
+        COUNT="0"
+        unset RESULTARRAYNUM
+        unset RESULTARRAYNONUM
+        for i in "${CLEANEDREAD[@]}"; do
+          if echo "$i" | grep $RESPONSE &> /dev/null; then
+            COUNT=$((COUNT + 1))
+            ctext green
+            echo -n "$COUNT) "
+            echo "$i" | grep -Po '^.{1}\K.*'
+            ctext reset
+            RESULTARRAYNUM+=("$COUNT   $i")
+            RESULTARRAYNONUM+=("$i")
+          fi
+        done
+        dRESPONSE="NULL"
+        until [ $dRESPONSE == back ]; do
+          echo " "
+          read -p "$(ctext cyan nnl "Enter locale to commit (or type 'back' to return to search): ")" dRESPONSE
+          if [ -z "$dRESPONSE" ]; then
+            dRESPONSE="NULL"
+          fi
+          if [[ ! $dRESPONSE =~ ^-?[0-9]+$ ]] && [ ! $dRESPONSE == back ]; then
+            dRESPONSE="999999999"
+          fi
+          if [ ! $dRESPONSE == back ] && [ ! $dRESPONSE -le $COUNT ]; then
+            until [ $dRESPONSE == back ] || [ $dRESPONSE -le $COUNT ]; do
+              ctext magenta std "Invalid response!"
+              echo " "
+              read -p "$(ctext cyan nnl "Enter locale to commit (or type 'back' to return to search): ")" dRESPONSE
+              if [ -z "$dRESPONSE" ]; then
+                dRESPONSE="NULL"
+              fi
+              if [[ ! $dRESPONSE =~ ^-?[0-9]+$ ]] && [ ! $dRESPONSE == back ]; then
+                dRESPONSE="999999999"
+              fi
+            done
+          fi
+          if [ ! $dRESPONSE == back ]; then
+            ALREADYMATCHED="0"
+            for i in "${RESULTARRAYNUM[@]}"; do
+              unset MATCHVAR
+              MATCHVAR=$(echo "$i" | head -c 4)
+              if echo "$MATCHVAR" | grep $dRESPONSE &> /dev/null; then
+                if [ ! $ALREADYMATCHED == 1 ]; then
+                  for F in "${RESULTARRAYNONUM[@]}"; do
+                    if echo "$i" | grep "$F" &> /dev/null; then
+                      echo "$F" | grep -Po '^.{1}\K.*' >> /tmp/locales.lemon
+                      STATVAR=$(echo "$F" | grep -Po '^.{1}\K.*')
+                      ctext green nnl "$STATVAR:"
+                      ctext green std " success"
+                      unset STATVAR
+                    fi
+                  done
+                  ALREADYMATCHED="1"
+                fi
+              fi
+            done
+          fi
+        done
+      fi
     done
-    echo "."
-    echo "ISO locale: $ISO"
-    echo "UTF locale: $UTF"
-    echo "."
-    isyes "Is this correct? (Y/n)"
+    echo -e "\e[4m$(ctext green)-Locale Summary-$(ctext reset)\e[0m"
+    ctext green
+    cat /tmp/locales.lemon
+    ctext reset
+    echo " "
+    if ! isyes "$(ctext cyan nnl "Generate above locales? (Y/n)")"; then
+      rm -rf /tmp/locales.lemon
+      unset RESULTARRAYNUM
+      unset RESULTARRAYNONUM
+      unset INITIALREAD
+      unset CLEANEDREAD
+    else
+      break
+    fi
   done
-  echo "$ISO ISO-8859-1" >> /etc/locale.gen
-  echo "$UTF UTF-8" >> /etc/locale.gen
-  locale-gen
-  VALID=("1" "2")
-  untilvalidresponse '
-    echo ".";
-    echo "Please select default locale:";
-    echo "1: $ISO";
-    echo "2: $UTF"
-  ' "${VALID[@]}"
-  if [ $RESPONSE == 1 ]; then
-    echo "LANG=$ISO" >> /etc/locale.conf
-  else
-    echo "LANG=$UTF" >> /etc/locale.conf
-  fi
+  echo " "
+  cat /tmp/locales.lemon >> /etc/locale.gen
+  IFS=$'\r\n' GLOBIGNORE='*' command eval 'SETREAD=($(cat /tmp/locales.lemon))'
+  COUNT="0"
+  for i in "${SETREAD[@]}"; do
+    COUNT=$((COUNT + 1))
+    ctext green
+    echo -n "$COUNT) "
+    echo "$i" | cut -d' ' -f1
+    ctext reset
+    dRESULTARRAYNUM+=("$COUNT   $i")
+    dRESULTARRAYNONUM+=("$i")
+  done
+  RESPONSE="NULL"
+  MCBREAKY="0"
+  until false; do
+    if [ $MCBREAKY == 1 ]; then
+      break
+    fi
+    echo " "
+    read -p "$(ctext cyan nnl "Choose default locale: ")" RESPONSE
+    if [ -z "$RESPONSE" ]; then
+      RESPONSE="NULL"
+    fi
+    if [[ ! $RESPONSE =~ ^-?[0-9]+$ ]] && [ ! $RESPONSE == back ]; then
+      RESPONSE="999999999"
+    fi
+    if [ ! $RESPONSE == back ] && [ ! $RESPONSE -le $COUNT ]; then
+      until [ $RESPONSE == back ] || [ $RESPONSE -le $COUNT ]; do
+        ctext magenta std "Invalid response!"
+        echo " "
+        read -p "$(ctext cyan nnl "Choose default locale: ")" RESPONSE
+        if [ -z "$RESPONSE" ]; then
+          RESPONSE="NULL"
+        fi
+        if [[ ! $RESPONSE =~ ^-?[0-9]+$ ]] && [ ! $RESPONSE == back ]; then
+          RESPONSE="999999999"
+        fi
+      done
+    fi
+    dALREADYMATCHED="0"
+    for x in "${dRESULTARRAYNUM[@]}"; do
+      unset dMATCHVAR
+      dMATCHVAR=$(echo "$x" | head -c 4)
+      if echo "$dMATCHVAR" | grep $RESPONSE &> /dev/null; then
+        if [ ! $dALREADYMATCHED == 1 ]; then
+          for Z in "${dRESULTARRAYNONUM[@]}"; do
+            if echo "$x" | grep "$Z" &> /dev/null; then
+              unset DIALOGUEVAR
+              DIALOGUEVAR=$(echo "$Z" | cut -d' ' -f1)
+              if isyes "$(ctext cyan nnl "Use $(ctext green)$DIALOGUEVAR $(ctext cyan)as default locale? (Y/n)")"; then
+                echo "LANG=$DIALOGUEVAR" > /etc/locale.conf
+                MCBREAKY="1"
+              fi
+            fi
+          done
+          dALREADYMATCHED="1"
+        fi
+      fi
+    done
+  done
   yes="1"
   while [ ! "$yes" == 0 ]; do
     unset HOSTNAME
-    read -p "Please enter a name for the system (hostname): " HOSTNAME
+    read -p "$(ctext cyan nnl "Please enter a name for the system (hostname): ")" HOSTNAME
     if [ -z "$HOSTNAME" ]; then
       HOSTNAME="NULL"
     fi
-    isyes "You have entered $HOSTNAME. Is this correct? (Y/n)"
+    isyes "$(ctext cyan nnl "You have entered $(ctext green)$HOSTNAME$(ctext cyan). Is this correct? (Y/n)")"
   done
   echo $HOSTNAME > /etc/hostname
   echo "127.0.0.1     localhost" >> /etc/hosts
   echo "::1           localhost" >> /etc/hosts
   echo "127.0.1.1     $HOSTNAME.localdomain $HOSTNAME" >> /etc/hosts
   if [ $ROOT == 1 ] || [ $NONROOTUSER == 0 ] || [ $SUDO == 0 ]; then
-    echo "Enter new root password"
+    ctext cyan std "Enter new root password"
     until passwd root; do
-      echo "Enter new root password"
+      ctext cyan std "Enter new root password"
     done
     cp -r /etc/skel/.bash* /root/
     echo "PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:$PATH" >> /root/.bashrc
@@ -284,11 +426,11 @@ function CONF {
     yes="1"
     while [ ! "$yes" == 0 ]; do
       unset USER
-      read -p "Enter non-root username: " USER
+      read -p "$(ctext cyan nnl "Enter non-root username: ")" USER
       if [ -z "$USER" ]; then
         USER="NULL"
       fi
-      isyes "You have entered $USER for your username. Is this correct? (Y/n)"
+      isyes "$(ctext cyan nnl "You have entered $(ctext green)$USER $(ctext cyan)for your username. Is this correct? (Y/n)")"
     done
     useradd $USER
     usermod -a -G wheel $USER
@@ -304,9 +446,9 @@ function CONF {
         echo "$USER ALL=(ALL:ALL) ALL" >> /etc/sudoers
       fi
     fi
-    echo "Enter a new password for $USER: "
+    ctext cyan std "Enter a new password for $USER: "
     until passwd $USER; do
-      echo "Enter a new password for $USER: "
+      ctext cyan std "Enter a new password for $USER: "
     done
     mkdir -p /home/$USER
     cp -r /etc/skel/.bash* /home/$USER
@@ -318,6 +460,7 @@ function CONF {
     chown $USER:$USER /home/$USER/.*
   fi
   if [ $POSTINSTALLSCRIPTS == 1 ]; then
+    ctext cyan std "-Executing post-install scripts-"
     PISCRIPTS=$(find /etc/lemon/postinstall/)
     for i in $PISCRIPTS; do
       if file $i | grep executable &> /dev/null; then
@@ -328,15 +471,15 @@ function CONF {
   fi
   LOG=/tmp/lemonaid.log
   if [ -f "$LOG" ]; then
-    echo "Process completed sucessfuly, but errors were detected"
-    if isyes "Would you like to read the error log? (Y/n)"; then
+    ctext magenta std "Process completed sucessfuly, but errors were detected"
+    if isyes "$(ctext cyan nnl "Would you like to read the error log? (Y/n)")"; then
       $EDITOR $LOG
       echo "."
     fi
   fi
-  if isyes "Do you have any additional (manual) configuration to do inside the chroot environment? (Y/n)"; then
-    echo "You will now be presented with a bash shell within a chroot of the installation target."
-    echo "When you are finished with additional setup, type exit and the install process will continue."
+  if isyes "$(ctext cyan nnl "Do you have any additional (manual) configuration to do inside the chroot environment? (Y/n)")"; then
+    ctext green std "You will now be presented with a bash shell within a chroot of the installation target."
+    ctext green std "When you are finished with additional setup, type exit and the install process will continue."
     bash --login -i
   fi
 }
