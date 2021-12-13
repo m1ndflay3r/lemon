@@ -324,16 +324,14 @@ function PARTITION {
           fi;
           ctext green std "Additional mountpoint setup menu";
           ctext green std "--------------------------------";
-          ctext green std "Choose an option from the menu below.";
-          ctext green std "when you are finished setting up additional mountpoints, type 'done' to return to the previous menu.";
-          ctext green std "----------------------------------------------------------------------------------------------------";
           ctext green std "1 - Set target partition";
           ctext green std "2 - Formatting options";
           ctext green std "3 - Set target partition mountpoint";
           ctext green std "4 - Set mountpoint options";
           ctext green std "5 - List changes to commit";
           ctext green std "6 - Start over";
-          ctext green std "7 - Commit changes"
+          ctext green std "7 - Commit changes";
+	  ctext green std "8 - back"
         ' "${dVALID[@]}"
         clear
         if [ $RESPONSE == 1 ]; then
@@ -557,6 +555,13 @@ function PARTITION {
               fi
             fi
           fi
+	  clear
+	  dISVIEWDATA="1"
+	  if [ ! $FORMATERR == 1 ] || [ ! $TPFORMAT == 1 ]; then
+	    ctext cyan std "Completed succesfully"
+	  else
+	    ctext magenta std "Commiting changes failed"
+	  fi
         fi
       done
     fi
