@@ -224,7 +224,7 @@ function CONF {
     fi
     if ! ls -a /usr/share/zoneinfo/$REGION/$CITY &> /dev/null; then
       until ls -a /usr/share/zoneinfo/$REGION/$CITY &> /dev/null; do
-        ctext magenta std "Error: $CITY does not exist in filesystem!"
+        ctext magenta std "Error: $(ctext red)$CITY $(ctext magenta)does not exist in filesystem!"
         read -p "$(ctext cyan nnl "Enter your city: ")" CITY
         if [ -z "$CITY" ]; then
           CITY="NULL"
