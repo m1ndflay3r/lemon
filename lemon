@@ -334,6 +334,9 @@ function PARTITION {
 	  ctext green std "8 - back"
         ' "${dVALID[@]}"
         clear
+	if [ $RESPONSE == 8 ]; then
+	  RESPONSE="done"
+	fi
         if [ $RESPONSE == 1 ]; then
           fdisk -l
           "."
