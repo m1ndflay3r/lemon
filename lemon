@@ -359,9 +359,16 @@ function PARTITION {
         fi
         if [ $RESPONSE == 2 ]; then
           RESPONSE="NULL"
+          zISDATAVIEW="0"
           until [ $RESPONSE == 3 ] && [ $NEEDFSSET == 0 ]; do
             zVALID=("1" "2" "3")
             untilvalidresponse '
+              if [ ! $zISDATAVIEW == 1 ]; then
+                clear;
+              else
+                zISDATAVIEW="0";
+              fi;
+              echo " ";
               ctext green std "Format options";
               ctext green std "--------------";
               ctext green std "1 - Toggle format target";
@@ -374,16 +381,25 @@ function PARTITION {
                 ctext cyan std "Target partition format $(ctext green)ON"
                 TPFORMAT="1"
                 NEEDFSSET="1"
+                zISDATAVIEW="1"
               else
                 ctext cyan std "Target partition format $(ctext green)OFF"
                 TPFORMAT="0"
                 NEEDFSSET="0"
+                zISDATAVIEW="1"
               fi
             fi
             if [ $RESPONSE == 2 ]; then
+              xISDATAVIEW="0"
               until [ $RESPONSE == 4 ]; do
                 xVALID=("1" "2" "3" "4")
                 untilvalidresponse '
+                  if [ ! $xISDATAVIEW == 1 ]; then
+                    clear;
+                  else
+                    xISDATAVIEW="0";
+                  fi;
+                  echo " ";
                   ctext green std "Choose filesystem for target partition";
                   ctext green std "--------------------------------------";
                   ctext green std "1 - ext4";
@@ -396,18 +412,27 @@ function PARTITION {
                   if isyes "$(ctext cyan nnl "You have chosen $(ctext green)ext4 $(ctext cyan)for target filesystem. Is this correct? (Y/n)")"; then
                     FORMATOPTS="ext4"
                     NEEDFSSET="0"
+                    clear
+                    xISDATAVIEW="1"
+                    ctext green std "ext4 $(ctext cyan)selected for FS type"
                   fi
                 fi
                 if [ $RESPONSE == 2 ]; then
                   if isyes "$(ctext cyan nnl "You have chosen $(ctext green)btrfs $(ctext cyan)for target filesystem. Is this correct? (Y/n)")"; then
                     FORMATOPTS="btrfs"
                     NEEDFSSET="0"
+                    clear
+                    xISDATAVIEW="1"
+                    ctext green std "btrfs $(ctext cyan)selected for FS type"
                   fi
                 fi
                 if [ $RESPONSE == 3 ]; then
                   if isyes "$(ctext cyan nnl "You have chosen $(ctext green)vfat $(ctext cyan)for target filesystem. Is this correct? (Y/n)")"; then
                     FORMATOPTS="vfat"
                     NEEDFSSET="0"
+                    clear
+                    xISDATAVIEW="1"
+                    ctext green std "vfat $(ctext cyan)selected for FS type"
                   fi
                 fi
               done
