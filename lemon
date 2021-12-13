@@ -314,7 +314,7 @@ function PARTITION {
       MOUNTPOINT="NULL"
       NEEDFSSET="0"
       dISDATAVIEW="0"
-      until [ $RESPONSE == done ]; do
+      until [ $RESPONSE == 8 ]; do
         dVALID=("1" "2" "3" "4" "5" "6" "7" "done")
         untilvalidresponse '
           if [ ! $dISDATAVIEW == 1 ]; then
@@ -334,9 +334,6 @@ function PARTITION {
 	  ctext green std "8 - back"
         ' "${dVALID[@]}"
         clear
-	if [ $RESPONSE == 8 ]; then
-	  RESPONSE="done"
-	fi
         if [ $RESPONSE == 1 ]; then
           fdisk -l
           "."
