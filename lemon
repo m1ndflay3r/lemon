@@ -138,9 +138,15 @@ function PARTITION {
     dDISKPART="$DISKPART"
     DISKPART="fdisk"
   fi
+  ISDATAVIEW="0"
   until [ $RESPONSE == 9 ] && [ $ROOTSET == 1 ] && ([ $BOOTMODE == 1 ] || [ $EFISET == 1 ]); do
     PVALID=("1" "2" "3" "4" "5" "6" "7" "8" "9")
     untilvalidresponse '
+      if [ ! $ISDATAVIEW == 1 ]; then
+        clear;
+      else
+        ISDATAVIEW="0";
+      fi;
       echo " ";
       ctext green std "                 Drive Setup";
       ctext green std "                 -----------";
@@ -307,9 +313,15 @@ function PARTITION {
       MOUNTOPTS="NULL"
       MOUNTPOINT="NULL"
       NEEDFSSET="0"
+      dISDATAVIEW="0"
       until [ $RESPONSE == done ]; do
         dVALID=("1" "2" "3" "4" "5" "6" "7" "done")
         untilvalidresponse '
+          if [ ! $dISDATAVIEW == 1 ]; then
+            clear;
+          else
+            dISDATAVIEW="0";
+          fi;
           ctext green std "Additional mountpoint setup menu";
           ctext green std "--------------------------------";
           ctext green std "Choose an option from the menu below.";
@@ -439,6 +451,7 @@ function PARTITION {
           else
             ctext cyan std "Mountopts:"
           fi
+          dISDATAVIEW="1"
         fi
         if [ $RESPONSE == 6 ]; then
           if isyes "$(ctext cyan nnl "Are you sure you wish to start over? (Y/n)")"; then
@@ -448,6 +461,8 @@ function PARTITION {
             MOUNTOPTS="NULL"
             MOUNTPOINT="NULL"
             NEEDFSSET="0"
+            clear
+            dISDATAVIEW="1"
             ctext cyan std "All fields reset to NULL"
           fi
         fi
@@ -545,6 +560,7 @@ function PARTITION {
         ctext cyan std "All fields are empty."
       fi
       ctext green std "---------------------------------"
+      ISDATAVIEW="1"
     fi
     if [ $RESPONSE == 8 ]; then
       if isyes "$(ctext cyan nnl "Are you sure you wish to clear all data? (Y/n)")"; then
@@ -560,6 +576,8 @@ function PARTITION {
         rm -rf /tmp/mounts.lemon
         rm -rf /tmp/dmounts.lemon
         ADDMOUNTS="0"
+        clear
+        ISDATAVIEW="1"
         ctext cyan std "All fields reset to null."
       fi
     fi
