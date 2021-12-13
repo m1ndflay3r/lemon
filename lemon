@@ -588,11 +588,9 @@ function PARTITION {
         echo "Additional mounts"
         echo "-----------------"
         ctext reset
-        IFS=$'\n'
-        for i in cat /tmp/mountpoints.lemon; do
-          ctext cyan std "$i"
-        done
-        unset IFS
+	ctext cyan
+        cat /tmp/mountpoints.lemon
+	ctext reset
       fi
       if [ ! $ROOTSET == 1 ] && [ ! $EFISET == 1 ] && [ ! $SWAPSET == 1 ] && [ ! $HOMESET == 1 ] && [ ! $ADDMOUNTS == 1 ]; then
         ctext cyan std "All fields are empty."
@@ -749,6 +747,7 @@ function PARTITION {
       mkdir -p $i
     done
     for i in $(cat /tmp/mountpoints.lemon); do
+      unset IFS
       if ! mount $i; then
         ctext magenta std "Failed to mount $(ctext red)$i!"
         if ! isyes "$(ctext cyan nnl "Continue anyway? (Y/n)")"; then
@@ -756,6 +755,7 @@ function PARTITION {
           exit 1
         fi
       fi
+      IFS=$'\n'
     done
     unset IFS
   fi
