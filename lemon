@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #        Lemon        #
-#      V.1.0 RC3      #
+#      V.1.0 RC4      #
 #---------------------
 # Maintainer: Eris Nihila (M1ndFlay3r)
 #             sp0t1fyfr33tr1alabus3@outlook.com
@@ -20,25 +20,24 @@
 #
 #
 
-echo " _                             "
-echo "| |                            "
-echo "| | ___ _ __ ___   ___  _ __   "
-echo "| |/ _ \  _   _ \ / _ \|  _ \  "
-echo "| |  __/ | | | | | (_) | | | | "
-echo "|_|\___|_| |_| |_|\___/|_| |_| "
-echo "                               "
-echo "         By M1ndFlay3r         "
-echo "- - - - - - - - - - - - - - - -"
-
 source "${BASH_SOURCE%/*}/lemon.conf"
 source "${BASH_SOURCE%/*}/resources/lemonlib"
 STARTDIR=$(pwd)
 
+ctext yellow std " _                                 "
+ctext yellow std "| |                                "
+ctext yellow std "| | ___ _ __ ___   ___  _ __       "
+ctext yellow std "| |/ _ \  _   _ \ / _ \|  _ \      "
+ctext yellow std "| |  __/ | | | | | (_) | | | |     "
+ctext yellow std "|_|\___|_| |_| |_|\___/|_| |_|     "
+ctext yellow std "                                   "
+ctext yellow std "         By $(ctext red)M1ndFlay3r "
+ctext yellow std "- - - - - - - - - - - - - - - -    "
 
 ##
 ## Prompts user to edit lemon.conf prior to install
 ##
-if isyes "Do you wish to edit lemon.conf prior to install? (Y/n)"; then
+if isyes "$(ctext cyan nnl "Do you wish to edit lemon.conf prior to install? (Y/n)")"; then
   $EDITOR "${BASH_SOURCE%/*}/lemon.conf"
   source "${BASH_SOURCE%/*}/lemon.conf"
 fi
@@ -49,38 +48,38 @@ fi
 function PREP {
   if ! nettest --noretry; then
     untilnetpass '
-      echo "An internet connection is required to continue.";
-      echo "You will now return to the shell. When you are finished setting up your connection, type exit and the installation will resume.";
+      ctext magenta std "An internet connection is required to continue.";
+      ctext cyan std "You will now return to the shell. When you are finished setting up your connection, type exit and the installation will resume.";
       bash --login -i
     '
   fi
-  echo "Syncing pacman..."
+  ctext cyan std "Syncing pacman..."
   if ! pacman -Sy; then
-    echo "Failed to sync pacman! Check your internet settings, then restart lemon"
+    ctext red std "Failed to sync pacman! Check your internet settings, then restart lemon"
     exit 1
   fi
   echo "."
   if [ ! $NOREFLECTOR == 1 ]; then
-    echo "Fetching reflector..."
+    ctext cyan std "Fetching reflector..."
     if ! pacman -S --needed --noconfirm reflector &> /dev/null; then
-      echo "Failed to fetch reflector! Mirrorlist will be unmodified from the one shipped with the live ISO"
-      if ! isyes "Continue anyway? (Y/n)"; then
-        echo "Abort"
+      ctext magenta std "Failed to fetch reflector! Mirrorlist will be unmodified from the one shipped with the live ISO"
+      if ! isyes "$(ctext cyan nnl "Continue anyway? (Y/n)")"; then
+        ctext red std "Abort"
         exit 1
       fi
     else
-      echo "Sorting mirrors with reflector."
-      echo "This may take a while. Please wait." 
+      ctext cyan std "Sorting mirrors with reflector."
+      ctext cyan std "This may take a while. Please wait."
       reflector --latest $REFLECTORCOUNT --protocol http --protocol https --sort rate --save /etc/pacman.d/mirrorlist
-      echo "Resyncing pacman with updated mirrorlist"
+      ctext cyan std "Resyncing pacman with updated mirrorlist"
       if ! pacman -Sy; then
-        echo "Failed to resync pacman after reflector sorting! Check your mirrorlist"
+        ctext red std "Failed to resync pacman after reflector sorting! Check your mirrorlist"
         exit 1
       fi
     fi
   fi
   echo "."
-  echo "Detecting bootmode..."
+  ctext cyan std "Detecting bootmode..."
   if ls -a /sys/firmware/efi/efivars &> /dev/null; then
     BOOTMODE="0"
   else
@@ -93,9 +92,9 @@ function PREP {
       sleep 0.5
       unset LAYOUT
       until [ ! -z "$LAYOUT" ]; do
-        read -p "Select keyboard layout from list (eg: de-latin1): " LAYOUT
+        read -p "$(ctext cyan nnl "Select keyboard layout from list (eg: de-latin1): ")" LAYOUT
       done
-      isyes "You have entered $LAYOUT. is this correct? (Y/n)"
+      isyes "$(ctext cyan nnl "You have entered $(ctext green)$LAYOUT$(ctext cyan). is this correct? (Y/n)")"
     done
     loadkeys $LAYOUT
     KEYSET="1"
@@ -130,8 +129,8 @@ function PARTITION {
   fi
   if ls -a /tmp/mnt &> /dev/null; then
     if ! rm -rf /tmp/mnt; then
-      echo "Mounts exist in /tmp/mnt from a previous run, but unable to unmount them!"
-      echo "Either unmount manually, or restart your computer before running lemon"
+      ctext red std "Mounts exist in /tmp/mnt from a previous run, but unable to unmount them!"
+      ctext red std "Either unmount manually, or restart your computer before running lemon"
       exit 1
     fi
   fi
@@ -143,45 +142,48 @@ function PARTITION {
     PVALID=("1" "2" "3" "4" "5" "6" "7" "8" "9")
     untilvalidresponse '
       echo " ";
-      echo "                 Drive Setup";
-      echo "                 -----------";
-      echo "Choose a menu option to proceed with disk setup.";
-      echo "When you are finished, hit finish to continue the installation.";
+      ctext green std "                 Drive Setup";
+      ctext green std "                 -----------";
+      ctext green std "Choose a menu option to proceed with disk setup.";
+      ctext green std "When you are finished, hit finish to continue the installation.";
       echo " ";
       if [ $BOOTMODE == 0 ]; then
-        echo "Note: you MUST have both an EFI and root partition!";
+        ctext cyan std "Note: you MUST have both an EFI and root partition!";
       else
         if [ $BOOTMODE == 1 ]; then
-          echo "Note: you MUST have a root partition!";
+          ctext cyan std "Note: you MUST have a root partition!";
         else
-          echo "---------------------------------";
-          echo "FATAL: Bootmode detection failed!";
-          echo "---------------------------------";
+          ctext red std "---------------------------------";
+          ctext red std "FATAL: Bootmode detection failed!";
+          ctext red std "---------------------------------";
           exit 1;
         fi;
       fi;
       if [ ! -z "$dDISKPART" ]; then
         echo " ";
 	echo " ";
-        echo "Note: $dDISKPART not found in PATH. Defaulting on fdisk.";
+        ctext magenta std "Note: $dDISKPART not found in PATH. Defaulting on fdisk.";
       fi;
-      echo "...................................................................";
-      echo "1: Drive setup ($DISKPART)";
-      echo "2: Set ROOT partition";
+      ctext green std "...................................................................";
+      ctext green std "1: Drive setup ($DISKPART)";
+      ctext green std "2: Set ROOT partition";
       if [ $BOOTMODE == 0 ]; then
-        echo "3: Set  EFI partition";
+        ctext green std "3: Set  EFI partition";
       else
+        tput dim;
         echo -e "\e[9m3: Set  EFI partition\e[0m";
+        tput sgr 0;
       fi;
-      echo "4: Set SWAP partition (optional)";
-      echo "5: Set HOME partition (optional)";
-      echo "6: Set additional mountpoints (optional)";
-      echo "7: View change summary"
-      echo "8: Start over"
-      echo "9: Finish"
+      ctext green std "4: Set SWAP partition (optional)";
+      ctext green std "5: Set HOME partition (optional)";
+      ctext green std "6: Set additional mountpoints (optional)";
+      ctext green std "7: View change summary";
+      ctext green std "8: Start over";
+      ctext green std "9: Finish"
     ' "${PVALID[@]}"
+    clear
     if ([ $RESPONSE == 9 ] && [ ! $ROOTSET == 1 ]) || ([ $RESPONSE == 9 ] && [ $BOOTMODE == 0 ] && [ ! $EFISET == 1 ]); then
-      echo "Error: Essential partition not set! (either ROOT partition not set, or EFI partition not set if running in EFI mode)"
+      ctext magenta std "Error: Essential partition not set! (either $(ctext red)ROOT $(ctext magenta)partition not set, or $(ctext red)EFI $(ctext magenta)partition not set if running in EFI mode)"
       RESPONSE="0"
       sleep 1
     fi
@@ -195,21 +197,21 @@ function PARTITION {
           until ls -a $DRIVE &> /dev/null; do
             DRIVE="NULL"
             fdisk -l
-            read -p "Target drive: " DRIVE
+            read -p "$(ctext cyan nnl "Target drive: ")" DRIVE
             if [ -z "$DRIVE" ]; then
               DRIVE="NULL"
             fi
             if ! ls -a $DRIVE &> /dev/null; then
-              echo "Error: $DRIVE does not exist!"
+              ctext magenta std "Error: $(ctext red)$DRIVE $(ctext magenta)does not exist!"
               sleep 1
             fi
           done
-          isyes "You have entered $DRIVE. Is this correct? (Y/n)"
+          isyes "$(ctext cyan nnl "You have entered $(ctext green)$DRIVE$(ctext cyan). Is this correct? (Y/n)")"
         done
         if ! $DISKPART $DRIVE; then
-          echo "Error: failed to execute $DISKPART on $DRIVE!"
+          ctext magenta std "Error: failed to execute $DISKPART on $(ctext red)$DRIVE!"
         fi
-        if ! isyes "Run $DISKPART on another drive? (Y/n)"; then
+        if ! isyes "$(ctext cyan nnl "Run $DISKPART on another drive? (Y/n)")"; then
 	  MENU="done"
 	fi
         if [ -z "$MENU" ]; then
@@ -223,36 +225,36 @@ function PARTITION {
         fdisk -l
         ROOT="NULL"
         until ls -a $ROOT &> /dev/null; do
-          read -p "Enter ROOT partition: " ROOT
+          read -p "$(ctext cyan nnl "Enter $(ctext green)ROOT $(ctext cyan)partition: ")" ROOT
           if [ -z "$ROOT" ]; then
             ROOT="NULL"
           fi
           if ! ls -a $ROOT &> /dev/null; then
-            echo "Error: partition $ROOT does not exist!"
+            ctext magenta std "Error: partition $(ctext red)$ROOT $(ctext magenta)does not exist!"
           fi
         done
-        isyes "You have entered $ROOT for your ROOT partition. Is this correct? (Y/n)"
+        isyes "$(ctext cyan nnl "You have entered $(ctext green)$ROOT $(ctext cyan)for your $(ctext green)ROOT $(ctext cyan)partition. Is this correct? (Y/n)")"
       done
       ROOTSET="1"
     fi
     if [ $RESPONSE == 3 ]; then
       if [ $BOOTMODE == 1 ]; then
-        echo "Error: you are running in BIOS mode! EFI partition setting is disabled"
+        ctext magenta std "Error: you are running in $(ctext red)BIOS $(ctext magenta)mode! $(ctext red)EFI $(ctext magenta)partition setting is disabled"
       else
         yes="1"
         while [ ! "$yes" == 0 ]; do
           fdisk -l
           EFI="NULL"
           until ls -a $EFI &> /dev/null; do
-            read -p "Enter EFI partition: " EFI
+            read -p "$(ctext cyan nnl "Enter $(ctext green)EFI $(ctext cyan)partition: ")" EFI
             if [ -z "$EFI" ]; then
               EFI="NULL"
             fi
             if ! ls -a $EFI &> /dev/null; then
-              echo "Error: partition $EFI does not exist!"
+              ctext magenta std "Error: partition $(ctext red)$EFI $(ctext magenta)does not exist!"
             fi
           done
-          isyes "You have entered $EFI for your EFI partition. Is this correct? (Y/n)"
+          isyes "$(ctext cyan nnl "You have entered $(ctext green)$EFI $(ctext cyan)for your $(ctext green)EFI $(ctext cyan)partition. Is this correct? (Y/n)")"
         done
         EFISET="1"
       fi
@@ -263,15 +265,15 @@ function PARTITION {
         fdisk -l
         SWAP="NULL"
         until ls -a $SWAP &> /dev/null; do
-          read -p "Enter SWAP partition: " SWAP
+          read -p "$(ctext cyan nnl "Enter $(ctext green)SWAP $(ctext cyan)partition: ")" SWAP
           if [ -z "$SWAP" ]; then
             SWAP="NULL"
           fi
           if ! ls -a $SWAP &> /dev/null; then
-            echo "Error: Partition $SWAP does not exist!"
+            ctext magenta std "Error: Partition $(ctext red)$SWAP $(ctext magenta)does not exist!"
           fi
         done
-        isyes "You have entered $SWAP for your SWAP partition. Is this correct? (Y/n)"
+        isyes "$(ctext cyan nnl "You have entered $(ctext green)$SWAP $(ctext cyan)for your $(ctext green)SWAP $(ctext cyan)partition. Is this correct? (Y/n)")"
       done
       SWAPSET="1"
     fi
@@ -281,18 +283,18 @@ function PARTITION {
         fdisk -l
         dHOME="NULL"
         until ls -a $dHOME &> /dev/null; do
-          read -p "Enter HOME partition: " dHOME
+          read -p "$(ctext cyan nnl "Enter $(ctext green)HOME $(ctext cyan)partition: ")" dHOME
           if [ -z "dHOME" ]; then
             dHOME="NULL"
           fi
           if ! ls -a $dHOME &> dev/null; then
-            echo "Error: Partition $dHOME does not exist!"
+            ctext magenta std "Error: Partition $(ctext red)$dHOME $(ctext magenta)does not exist!"
           fi
         done
-        isyes "You have entered $dHOME for your HOME partition. Is this correct? (Y/n)"
+        isyes "$(ctext cyan nnl "You have entered $(ctext green)$dHOME $(ctext cyan)for your $(ctext green)HOME $(ctext cyan)partition. Is this correct? (Y/n)")"
       done
       echo "."
-      if isyes "Format HOME partition? (Y/n)"; then
+      if isyes "$(ctext cyan nnl "Format $(ctext green)HOME $(ctext cyan)partition? (Y/n)")"; then
         FORMATHOME="1"
       fi
       HOMESET="1"
@@ -308,36 +310,37 @@ function PARTITION {
       until [ $RESPONSE == done ]; do
         dVALID=("1" "2" "3" "4" "5" "6" "7" "done")
         untilvalidresponse '
-          echo "Additional mountpoint setup menu";
-          echo "--------------------------------";
-          echo "Choose an option from the menu below.";
-          echo "when you are finished setting up additional mountpoints, type 'done' to return to the previous menu.";
-          echo "----------------------------------------------------------------------------------------------------";
-          echo "1 - Set target partition";
-          echo "2 - Formatting options";
-          echo "3 - Set target partition mountpoint";
-          echo "4 - Set mountpoint options";
-          echo "5 - List changes to commit";
-          echo "6 - Start over";
-          echo "7 - Commit changes"
+          ctext green std "Additional mountpoint setup menu";
+          ctext green std "--------------------------------";
+          ctext green std "Choose an option from the menu below.";
+          ctext green std "when you are finished setting up additional mountpoints, type 'done' to return to the previous menu.";
+          ctext green std "----------------------------------------------------------------------------------------------------";
+          ctext green std "1 - Set target partition";
+          ctext green std "2 - Formatting options";
+          ctext green std "3 - Set target partition mountpoint";
+          ctext green std "4 - Set mountpoint options";
+          ctext green std "5 - List changes to commit";
+          ctext green std "6 - Start over";
+          ctext green std "7 - Commit changes"
         ' "${dVALID[@]}"
+        clear
         if [ $RESPONSE == 1 ]; then
           fdisk -l
           "."
-          read -p "Enter target partition: " TARGETPART
+          read -p "$(ctext cyan nnl "Enter target partition: ")" TARGETPART
           if [ -z "$TARGETPART" ]; then
             TARGETPART="NULL"
           fi
           if ! ls -a $TARGETPART &> /dev/null; then
-            echo "Error: $TARGETPART does not exist!"
+            ctext magenta std "Error: $(ctext red)$TARGETPART $(ctext magenta)does not exist!"
             TARGETPART="NULL"
           else
-            if ! isyes "You have entered $TARGETPART. Is this correct? (Y/n)"; then
-              echo "Cancelled"
+            if ! isyes "$(ctext cyan nnl "You have entered $(ctext green)$TARGETPART$(ctext cyan). Is this correct? (Y/n)")"; then
+              ctext magenta std "Cancelled"
               TARGETPART="NULL"
             else
               echo "."
-              echo "Target partition $TARGETPART set"
+              ctext cyan std "Target partition $(ctext green)$TARGETPART $(ctext cyan)set"
               echo "."
             fi
           fi
@@ -347,19 +350,20 @@ function PARTITION {
           until [ $RESPONSE == 3 ] && [ $NEEDFSSET == 0 ]; do
             zVALID=("1" "2" "3")
             untilvalidresponse '
-              echo "Format options";
-              echo "--------------";
-              echo "1 - Toggle format target";
-              echo "2 - Filesystem select";
-              echo "3 - back"
+              ctext green std "Format options";
+              ctext green std "--------------";
+              ctext green std "1 - Toggle format target";
+              ctext green std "2 - Filesystem select";
+              ctext green std "3 - back"
             ' "${zVALID[@]}"
+            clear
             if [ $RESPONSE == 1 ]; then
-              if isyes "Format target partition? (Y/n)"; then
-                echo "Target partition format ON"
+              if isyes "$(ctext cyan nnl "Format target partition? (Y/n)")"; then
+                ctext cyan std "Target partition format $(ctext green)ON"
                 TPFORMAT="1"
                 NEEDFSSET="1"
               else
-                echo "Target partition format OFF"
+                ctext cyan std "Target partition format $(ctext green)OFF"
                 TPFORMAT="0"
                 NEEDFSSET="0"
               fi
@@ -368,27 +372,28 @@ function PARTITION {
               until [ $RESPONSE == 4 ]; do
                 xVALID=("1" "2" "3" "4")
                 untilvalidresponse '
-                  echo "Choose filesystem for target partition";
-                  echo "--------------------------------------";
-                  echo "1 - ext4";
-                  echo "2 - btrfs";
-                  echo "3 - vfat";
-                  echo "4 - back"
+                  ctext green std "Choose filesystem for target partition";
+                  ctext green std "--------------------------------------";
+                  ctext green std "1 - ext4";
+                  ctext green std "2 - btrfs";
+                  ctext green std "3 - vfat";
+                  ctext green std "4 - back"
                 ' "${xVALID[@]}"
+                clear
                 if [ $RESPONSE == 1 ]; then
-                  if isyes "You have chosen ext4 for target filesystem. Is this correct? (Y/n)"; then
+                  if isyes "$(ctext cyan nnl "You have chosen $(ctext green)ext4 $(ctext cyan)for target filesystem. Is this correct? (Y/n)")"; then
                     FORMATOPTS="ext4"
                     NEEDFSSET="0"
                   fi
                 fi
                 if [ $RESPONSE == 2 ]; then
-                  if isyes "You have chosen btrfs for target filesystem. Is this correct? (Y/n)"; then
+                  if isyes "$(ctext cyan nnl "You have chosen $(ctext green)btrfs $(ctext cyan)for target filesystem. Is this correct? (Y/n)")"; then
                     FORMATOPTS="btrfs"
                     NEEDFSSET="0"
                   fi
                 fi
                 if [ $RESPONSE == 3 ]; then
-                  if isyes "You have chosen vfat for target filesystem. Is this correct? (Y/n)"; then
+                  if isyes "$(ctext cyan nnl "You have chosen $(ctext green)vfat $(ctext cyan)for target filesystem. Is this correct? (Y/n)")"; then
                     FORMATOPTS="vfat"
                     NEEDFSSET="0"
                   fi
@@ -396,77 +401,77 @@ function PARTITION {
               done
             fi
             if [ $RESPONSE == 3 ] && [ $NEEDFSSET == 1 ]; then
-              echo "Error: Format target partition is ON, but no filesystem is selected!"
-              echo "Please select a filesystem for target partition, or toggle format target partition OFF"
+              ctext magenta std "Error: Format target partition is $(ctext red)ON$(ctext magenta), but no filesystem is selected!"
+              ctext magenta std "Please select a filesystem for target partition, or toggle format target partition $(ctext red)OFF"
             fi
           done
         fi
         if [ $RESPONSE == 3 ]; then
           yes="1"
           while [ ! "$yes" == 0 ]; do
-            read -p "Enter target mountpoint: " MOUNTPOINT
+            read -p "$(ctext cyan nnl "Enter target mountpoint: ")" MOUNTPOINT
             if [ -z "$MOUNTPOINT" ]; then
 	      MOUNTPOINT="NULL"
             fi
-            isyes "You have entered $MOUNTPOINT. Is this correct? (Y/n)"
+            isyes "$(ctext cyan nnl "You have entered $(ctext green)$MOUNTPOINT$(ctext cyan). Is this correct? (Y/n)")"
           done
         fi
         if [ $RESPONSE == 4 ]; then
-          read -p "Enter mount options: " MOUNTOPTS
+          read -p "$(ctext cyan nnl "Enter mount options: ")" MOUNTOPTS
           if [ -z "$MOUNTOPTS" ]; then
             MOUNTOPTS="NULL"
           fi
-          if ! isyes "You have entered $MOUNTOPTS. Is this correct? (Y/n)"; then
-            echo "Cancelled"
+          if ! isyes "$(ctext cyan nnl "You have entered $(ctext green)$MOUNTOPTS$(ctext cyan). Is this correct? (Y/n)")"; then
+            ctext magenta std "Cancelled"
             MOUNTOPTS="NULL"
           fi
         fi
         if [ $RESPONSE == 5 ]; then
-          echo "Target partition: $TARGETPART"
+          ctext cyan std "Target partition: $(ctext green)$TARGETPART"
           if [ $TPFORMAT == 1 ]; then
-            echo "Format: Yes \( $FORMATOPTS \)"
+            ctext cyan std "Format: $(ctext green)Yes$(ctext cyan) \( $(ctext green)$FORMATOPTS$(ctext cyan) \)"
           else
-            echo "Format: No"
+            ctext cyan std "Format: $(ctext green)No"
           fi
-          echo "Mountpoint: $MOUNTPOINT"
+          ctext cyan std "Mountpoint: $(ctext green)$MOUNTPOINT"
           if [ ! $MOUNTOPTS == NULL ]; then
-            echo "Mountopts: $MOUNTOPTS"
+            ctext cyan std "Mountopts: $(ctext green)$MOUNTOPTS"
           else
-            echo "Mountopts:"
+            ctext cyan std "Mountopts:"
           fi
         fi
         if [ $RESPONSE == 6 ]; then
-          if isyes "Are you sure you wish to start over? (Y/n)"; then
+          if isyes "$(ctext cyan nnl "Are you sure you wish to start over? (Y/n)")"; then
             TARGETPART="NULL"
             TPFORMAT="0"
             FORMATOPTS="NULL"
             MOUNTOPTS="NULL"
             MOUNTPOINT="NULL"
             NEEDFSSET="0"
-            echo "All fields reset to NULL"
+            ctext cyan std "All fields reset to NULL"
           fi
         fi
         if [ $RESPONSE == 7 ]; then
-          echo "------------------------"
-          echo "Target partition: $TARGETPART"
+          ctext cyan std "------------------------"
+          ctext cyan std "Target partition: $(ctext green)$TARGETPART"
           if [ $TPFORMAT == 1 ]; then
-            echo "Format: Yes ( $FORMATOPTS )"
+            ctext cyan std "Format: $(ctext green)Yes$(ctext cyan) ( $(ctext green)$FORMATOPTS$(ctext cyan) )"
           else
-            echo "Format: No"
+            ctext cyan std "Format: $(ctext green)No"
           fi
-          echo "Mountpoint: $MOUNTPOINT"
+          ctext cyan std "Mountpoint: $(ctext green)$MOUNTPOINT"
           if [ ! $MOUNTOPTS == NULL ]; then
-            echo "Mountopts: $MOUNTOPTS"
+            ctext cyan std "Mountopts: $(ctext green)$MOUNTOPTS"
           else
-            echo "Mountopts:"
+            ctext cyan std "Mountopts:"
           fi
-          echo "------------------------"
-          if isyes "Commit the above changes? (Y/n)"; then
+          ctext cyan std "------------------------"
+          if isyes "$(ctext cyan nnl "Commit the above changes? (Y/n)")"; then
             if [ $TPFORMAT == 1 ]; then
               FORMATERR="0"
               if [ $FORMATOPTS == btrfs ]; then
                 if ! mkfs.btrfs $TARGETPART; then
-                  echo "mkfs.btrfs failed on $TARGETPART!"
+                  ctext magenta std "mkfs.btrfs failed on $(ctext red)$TARGETPART!"
                   FORMATERR="1"
                 else
                   mount $TARGETPART /mnt
@@ -483,13 +488,13 @@ function PARTITION {
               fi
               if [ $FORMATOPTS == ext4 ]; then
                 if ! mkfs.ext4 $TARGETPART; then
-                  echo "mkfs.ext4 failed on $TARGETPART!"
+                  ctext magenta std "mkfs.ext4 failed on $(ctext red)$TARGETPART!"
                   FORMATERR="1"
                 fi
               fi
               if [ $FORMATOPTS == vfat ]; then
                 if ! mkfs.vfat $TARGETPART; then
-                  echo "mkfs.vfat failed on $TARGETPART!"
+                  ctext magenta std "mkfs.vfat failed on $(ctext red)$TARGETPART!"
                   FORMATERR="1"
                 fi
               fi
@@ -511,34 +516,38 @@ function PARTITION {
       done
     fi
     if [ $RESPONSE == 7 ]; then
+      ctext green std "---------------------------------"
       if [ $ROOTSET == 1 ]; then
-        echo "Root partition: $ROOT"
+        ctext cyan std "ROOT partition: $(ctext blue)$ROOT"
       fi
       if [ $EFISET == 1 ]; then
-        echo "EFI partition:  $EFI"
+        ctext cyan std "EFI partition:  $(ctext blue)$EFI"
       fi
       if [ $SWAPSET == 1 ]; then
-        echo "SWAP partition: $SWAP"
+        ctext cyan std "SWAP partition: $(ctext blue)$SWAP"
       fi
       if [ $HOMESET == 1 ]; then
-        echo "HOME partition: $dHOME"
+        ctext cyan std "HOME partition: $(ctext blue)$dHOME"
       fi
       if [ $ADDMOUNTS == 1 ]; then
+        ctext green
         echo "-----------------"
         echo "Additional mounts"
         echo "-----------------"
-        ISF=$'\n'
+        ctext reset
+        IFS=$'\n'
         for i in cat /tmp/mountpoints.lemon; do
-          echo "$i"
+          ctext cyan std "$i"
         done
-        unset ISF
+        unset IFS
       fi
       if [ ! $ROOTSET == 1 ] && [ ! $EFISET == 1 ] && [ ! $SWAPSET == 1 ] && [ ! $HOMESET == 1 ] && [ ! $ADDMOUNTS == 1 ]; then
-        echo "All fields are empty."
+        ctext cyan std "All fields are empty."
       fi
+      ctext green std "---------------------------------"
     fi
     if [ $RESPONSE == 8 ]; then
-      if isyes "Are you sure you wish to clear all data? (Y/n)"; then
+      if isyes "$(ctext cyan nnl "Are you sure you wish to clear all data? (Y/n)")"; then
         ROOT="NULL"
         ROOTSET="0"
         EFI="NULL"
@@ -551,15 +560,16 @@ function PARTITION {
         rm -rf /tmp/mounts.lemon
         rm -rf /tmp/dmounts.lemon
         ADDMOUNTS="0"
+        ctext cyan std "All fields reset to null."
       fi
     fi
   done
   echo "."
-  echo "Formatting..."
+  ctext cyan std "Formatting..."
   sleep 0.5
   if [ $USEBTRFS == 1 ]; then
     if ! mkfs.btrfs $ROOT; then
-      echo "Formatting ROOT partition failed!"
+      ctext red std "Formatting ROOT partition failed!"
       exit 1
     else
       mount $ROOT /mnt
@@ -575,13 +585,13 @@ function PARTITION {
     fi
   else
     if ! mkfs.ext4 $ROOT; then
-      echo "Formatting ROOT partition failed!"
+      ctext red std "Formatting ROOT partition failed!"
       exit 1
     fi
   fi
   if [ $BOOTMODE == 0 ]; then
     if ! mkfs.vfat $EFI; then
-      echo "Formatting EFI partition failed!"
+      ctext red std "Formatting EFI partition failed!"
       exit 1
     fi
   fi
@@ -591,7 +601,7 @@ function PARTITION {
   if [ $FORMATHOME == 1 ]; then
     if [ $USEBTRFSHOME == 1 ]; then
       if ! mkfs.btrfs $dHOME; then
-        echo "Formatting HOME partition failed!"
+        ctext red std "Formatting HOME partition failed!"
         exit 1
       else
         mount $dHOME /mnt
@@ -604,18 +614,18 @@ function PARTITION {
       fi
     else
       if ! mkfs.ext4 $dHOME; then
-        echo "Formatting HOME partition failed!"
+        ctext red std "Formatting HOME partition failed!"
         exit 1
       fi
     fi
   fi
   if [ $SWAPSET == 1 ]; then
     if ! mkswap $SWAP; then
-      echo "Formatting SWAP partition failed!"
+      ctext red std "Formatting SWAP partition failed!"
       exit 1
     else
       if ! swapon $SWAP; then
-        echo "Failed to activate swapspace!"
+        ctext red std "Failed to activate swapspace!"
         exit 1
       else
         echo "$SWAP" >> /tmp/swap.lemon
@@ -623,30 +633,30 @@ function PARTITION {
     fi
   fi
   echo "."
-  echo "Mounting..."
+  ctext cyan std "Mounting..."
   sleep 0.5
   mkdir /tmp/mnt/
   if [ $USEBTRFS == 1 ]; then
     if ! mount -o subvol=_active/rootvol $ROOT /tmp/mnt/; then
-      echo "Failed to mount ROOT partition!"
+      ctext red std "Failed to mount ROOT partition!"
       exit 1
     fi
     mkdir -p /tmp/mnt/mnt/defvol
     if [ ! $USEBTRFSHOME == 1 ]; then
       mkdir /tmp/mnt/home
       if ! mount -o subvol=_active/homevol $ROOT /tmp/mnt/home; then
-        echo "Failed to mount ROOT partition!"
+        ctext red std "Failed to mount ROOT partition!"
         exit 1
       fi
     fi
     if ! mount -o subvol=/ $ROOT /tmp/mnt/mnt/defvol; then
-      echo "Failed to mount ROOT partition!"
+      ctext red std "Failed to mount ROOT partition!"
       exit 1
     fi
     ROOTMOUNTED="1"
   else
     if ! mount $ROOT /tmp/mnt/; then
-      echo "Failed to mount ROOT partition!"
+      ctext red std "Failed to mount ROOT partition!"
       exit 1
     fi
     ROOTMOUNTED="1"
@@ -654,7 +664,7 @@ function PARTITION {
   if [ $BOOTMODE == 0 ]; then
     mkdir -p /tmp/mnt/boot/efi
     if ! mount $EFI /tmp/mnt/boot/efi; then
-      echo "Failed to mount EFI partition!"
+      ctext red std "Failed to mount EFI partition!"
       exit 1
     fi
     echo "/tmp/mnt/boot/efi" >> /tmp/mounts.lemon
@@ -665,13 +675,13 @@ function PARTITION {
     mkdir /tmp/mnt/home
     if [ $USEBTRFSHOME == 1 ]; then
       if ! mount -o subvol=_active/homevol $dHOME /tmp/mnt/home; then
-        echo "Failed to mount HOME partition!"
+        ctext red std "Failed to mount HOME partition!"
         exit 1
       fi
       echo "/tmp/mnt/home" >> /tmp/mounts.lemon
     else
       if ! mount $dHOME /tmp/mnt/home; then
-        echo "Failed to mount HOME partition!"
+        ctext red std "Failed to mount HOME partition!"
         exit 1
       fi
       echo "/tmp/mnt/home" >> /tmp/mounts.lemon
@@ -684,9 +694,9 @@ function PARTITION {
     done
     for i in $(cat /tmp/mountpoints.lemon); do
       if ! mount $i; then
-        echo "Failed to mount $i!"
-        if ! isyes "Continue anyway? (Y/n)"; then
-          echo "Aborting"
+        ctext magenta std "Failed to mount $(ctext red)$i!"
+        if ! isyes "$(ctext cyan nnl "Continue anyway? (Y/n)")"; then
+          ctext red std "Aborting"
           exit 1
         fi
       fi
@@ -702,17 +712,17 @@ function PARTITION {
 ## Main installation procedure
 ##
 function INSTALL {
-  echo "Installing the base system..."
+  ctext cyan std "Installing the base system..."
   sleep 0.5
   cd /tmp/mnt/
   if [ $USEBTRFS == 1 ] || [ $USEBTRFSHOME == 1 ]; then
     if ! pacstrap . base btrfs-progs; then
-      echo "pacstrap base system failed!"
+      ctext red std "pacstrap base system failed!"
       exit 1
     fi
   else
     if ! pacstrap . base; then
-      echo "pacstrap base system failed!"
+      ctext red std "pacstrap base system failed!"
       exit 1
     fi
   fi
@@ -739,7 +749,7 @@ function INSTALL {
     mount --bind /sys/firmware/efi/efivars sys/firmware/efi/efivars/
   fi
   echo "BOOTMODE=$BOOTMODE" >> tmp/info.lemon
-  echo "Entering chroot"
+  ctext cyan std "Entering chroot"
   COUNT=0
   until [ $COUNT == 3 ]; do
     sleep 1
@@ -751,7 +761,7 @@ function INSTALL {
   mv etc/resolv.conf.bak etc/resolv.conf
   rm -rf etc/lemon
   echo "."
-  if ! isyes "Installation complete! Reboot now? (Y/n)"; then
+  if ! isyes "$(ctext cyan nnl "Installation complete! Reboot now? (Y/n)")"; then
     exit 0
   else
     reboot
