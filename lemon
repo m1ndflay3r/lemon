@@ -362,6 +362,7 @@ function PARTITION {
           RESPONSE="NULL"
           zISDATAVIEW="0"
 	  dISCOMP="0"
+	  TPFORMAT="0"
           until [ $dISCOMP == 1 ] && [ $NEEDFSSET == 0 ]; do
             zVALID=("1" "2" "3")
             untilvalidresponse '
@@ -379,7 +380,7 @@ function PARTITION {
             ' "${zVALID[@]}"
             clear
             if [ $RESPONSE == 1 ]; then
-              if isyes "$(ctext cyan nnl "Format target partition? (Y/n)")"; then
+              if [ $TPFORMAT == 0 ]; then
 	        clear
                 ctext cyan std "Target partition format $(ctext green)ON"
                 TPFORMAT="1"
@@ -387,7 +388,7 @@ function PARTITION {
                 zISDATAVIEW="1"
               else
 	        clear
-                ctext cyan std "Target partition format $(ctext green)OFF"
+                ctext cyan std "Target partition format $(ctext red)OFF"
                 TPFORMAT="0"
                 NEEDFSSET="0"
                 zISDATAVIEW="1"
