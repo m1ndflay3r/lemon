@@ -438,6 +438,7 @@ function PARTITION {
                   fi
                 fi
               done
+	      RESPONSE="0"
             fi
             if [ $RESPONSE == 3 ] && [ $NEEDFSSET == 1 ]; then
               ctext magenta std "Error: Format target partition is $(ctext red)ON$(ctext magenta), but no filesystem is selected!"
