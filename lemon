@@ -360,7 +360,8 @@ function PARTITION {
         if [ $RESPONSE == 2 ]; then
           RESPONSE="NULL"
           zISDATAVIEW="0"
-          until [ $RESPONSE == 3 ] && [ $NEEDFSSET == 0 ]; do
+	  dISCOMP="0"
+          until [ $dISCOMP == 1 ] && [ $NEEDFSSET == 0 ]; do
             zVALID=("1" "2" "3")
             untilvalidresponse '
               if [ ! $zISDATAVIEW == 1 ]; then
@@ -439,6 +440,7 @@ function PARTITION {
                 fi
               done
 	      RESPONSE="0"
+	      dISCOMP="1"
             fi
             if [ $RESPONSE == 3 ] && [ $NEEDFSSET == 1 ]; then
               ctext magenta std "Error: Format target partition is $(ctext red)ON$(ctext magenta), but no filesystem is selected!"
