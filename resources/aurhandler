@@ -27,21 +27,21 @@ if [ "$OP" == -S ]; then
     PKGB=./PKGBUILD
     PKGBUILDBLANK="0"
     if [ ! -f $PKGB ]; then
-      echo "Error: package does not exist by the name $b!"
-      echo "Aborting"
+      ctext magenta std "Error: package does not exist by the name $b!"
+      ctext magenta std "Aborting"
       echo "Failed AUR package: $b (package does not exist!)" >> /home/aur/aur.log
       PKGBUILDBLANK="1"
       false
     fi
     function PKGBUILD {
       if [ ! $PKGBUILDBLANK == 1 ]; then
-        if isyes "Would you like to edit the PKGBUILD? (Y/n)" ; then
+        if isyes "$(ctext cyan nnl "Would you like to edit the PKGBUILD? (Y/n)")" ; then
           if ! which $EDITOR &> /dev/null; then
             EDITOR="vim"
           fi
           if ! which $EDITOR &> /dev/null; then
-            echo "No suitable text editor found!"
-            echo "If one is present on the system, enter its command now (eg: nano, vim, emacs, etc). Otherwise leave blank to skip PKGBUILD editing."
+            ctext magenta std "No suitable text editor found!"
+            ctext magenta nnl "If one is present on the system, enter its command now (eg: nano, vim, emacs, etc). Otherwise leave blank to skip PKGBUILD editing. : "
             read EDITOR
             if [ -z "$EDITOR" ]; then
               EDITOR="NULL"
@@ -70,12 +70,12 @@ if [ "$OP" == -S ]; then
       done
       for i in ${DEPS[@]}; do
         if ! pacman -Ql $i &> /dev/null; then
-          echo "Trying to install $i with pacman (dependency)"
+          ctext cyan std "Trying to install $i with pacman (dependency)"
           if ! sudo pacman -S --noconfirm --needed $i; then
-            echo "Installing $i with pacman failed"
-            echo "Trying to install $i from AUR"
+            ctext magenta std "Installing $i with pacman failed"
+            ctext cyan std "Trying to install $i from AUR"
             if ! aurhandler -S $i; then
-              echo "FATAL: Unable to install dependency $i!"
+              ctext magenta std "FATAL: Unable to install dependency $i!"
               echo "Failed AUR package: $b (failed to install dependency $i)" >> /home/aur/aur.log
               DEPBROKEN="1"
               false
@@ -90,7 +90,7 @@ if [ "$OP" == -S ]; then
       fi
       if [ ! $DEPBROKEN == 1 ]; then
         if ! makepkg -csi || false; then
-          echo "Makepkg failed!"
+          ctext magenta std "Makepkg failed!"
           cd $HOME
           echo "Failed AUR package: $b (build failure)" >> /home/aur/aur.log
           false
