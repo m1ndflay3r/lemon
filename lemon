@@ -471,7 +471,7 @@ function PARTITION {
         if [ $RESPONSE == 5 ]; then
           ctext cyan std "Target partition: $(ctext green)$TARGETPART"
           if [ $TPFORMAT == 1 ]; then
-            ctext cyan std "Format: $(ctext green)Yes$(ctext cyan) \( $(ctext green)$FORMATOPTS$(ctext cyan) \)"
+            ctext cyan std "Format: $(ctext green)Yes$(ctext cyan) ( $(ctext green)$FORMATOPTS$(ctext cyan) )"
           else
             ctext cyan std "Format: $(ctext green)No"
           fi
