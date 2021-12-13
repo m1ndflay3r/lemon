@@ -378,11 +378,13 @@ function PARTITION {
             clear
             if [ $RESPONSE == 1 ]; then
               if isyes "$(ctext cyan nnl "Format target partition? (Y/n)")"; then
+	        clear
                 ctext cyan std "Target partition format $(ctext green)ON"
                 TPFORMAT="1"
                 NEEDFSSET="1"
                 zISDATAVIEW="1"
               else
+	        clear
                 ctext cyan std "Target partition format $(ctext green)OFF"
                 TPFORMAT="0"
                 NEEDFSSET="0"
