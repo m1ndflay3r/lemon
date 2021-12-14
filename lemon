@@ -341,7 +341,7 @@ function PARTITION {
           if [ -z "$TARGETPART" ]; then
             TARGETPART="NULL"
           fi
-          if ! ls -a $TARGETPART &> /dev/null; then
+          if ! ls -a /$TARGETPART &> /dev/null; then
             ctext magenta std "Error: $(ctext red)$TARGETPART $(ctext magenta)does not exist!"
             TARGETPART="NULL"
           else
