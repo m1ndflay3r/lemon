@@ -337,11 +337,11 @@ function PARTITION {
         if [ $RESPONSE == 1 ]; then
           fdisk -l
           "."
-          read -p "$(ctext cyan nnl "Enter target partition: $(ctext white)/")" TARGETPART
+          read -p "$(ctext cyan nnl "Enter target partition: ")" TARGETPART
           if [ -z "$TARGETPART" ]; then
             TARGETPART="NULL"
           fi
-          if ! ls -a /$TARGETPART &> /dev/null; then
+          if ! ls -a $TARGETPART &> /dev/null; then
             ctext magenta std "Error: $(ctext red)$TARGETPART $(ctext magenta)does not exist!"
             TARGETPART="NULL"
           else
@@ -565,6 +565,7 @@ function PARTITION {
 	  fi
         fi
       done
+      RESPONSE="0"
     fi
     if [ $RESPONSE == 7 ]; then
       ctext green std "---------------------------------"
