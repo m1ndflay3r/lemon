@@ -334,6 +334,7 @@ function CONF {
       unset INITIALREAD
       unset CLEANEDREAD
     else
+      locale-gen
       break
     fi
   done
