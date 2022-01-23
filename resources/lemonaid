@@ -128,6 +128,7 @@ function MAIN {
               else
                 sudo mv aurtool/aurtool /bin/;
                 sudo chmod 755 /bin/aurtool;
+                sudo chown root:root /bin/aurtool;
               fi;
             fi;
           fi;
