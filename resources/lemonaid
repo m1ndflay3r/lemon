@@ -335,12 +335,12 @@ function CONF {
       unset INITIALREAD
       unset CLEANEDREAD
     else
-      locale-gen
       break
     fi
   done
   echo " "
   cat /tmp/locales.lemon >> /etc/locale.gen
+  locale-gen
   IFS=$'\r\n' GLOBIGNORE='*' command eval 'SETREAD=($(cat /tmp/locales.lemon))'
   COUNT="0"
   for i in "${SETREAD[@]}"; do
