@@ -27,6 +27,9 @@ function PREP {
   fi
   pacman-key --init
   pacman-key --populate archlinux
+  if [ $PARALLELDL == 1 ]; then
+    echo "ParallelDownloads = $PARALLELDLCOUNT" >> /etc/pacman.conf
+  fi
   if ! pacman -Sy; then
     ctext red std "Failed to sync pacman on install target! Check your internet settings, then restart lemon"
     exit 1
