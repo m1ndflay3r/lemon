@@ -111,26 +111,7 @@ function MAIN {
           source /etc/lemon/resources/lemonlib;
           aurhandler -S ${AURPACKAGES[@]};
           if isyes "$(ctext cyan nnl "Install Aurtool? (for AUR package management post-install) (Y/n)")"; then
-            PKGQUERYFAILED="0";
-            if ! which package-query &> /dev/null; then
-              aurhandler -S package-query;
-              if ! which package-query &> /dev/null; then
-                ctext magenta std "Failed to install aurtool: package-query failed! (aurtool dependency)";
-                echo "Aurtool failed: package-query failed to install" >> /home/aur/aur.log;
-                PKGQUERYFAILED="1";
-              fi;
-            fi;
-            if [ ! $PKGQUERYFAILED == 1 ]; then
-              cd $HOME;
-              if ! git clone http://github.com/m1ndflay3r/aurtool; then
-                ctext magenta std "Failed to fetch aurtool!";
-                echo "Aurtool failed: Failed to fetch from repository" >> /home/aur/aur.log;
-              else
-                sudo mv aurtool/aurtool /bin/;
-                sudo chmod 755 /bin/aurtool;
-                sudo chown root:root /bin/aurtool;
-              fi;
-            fi;
+            aurhandler -S aurtool-git
           fi;
           exit
          ' >> /home/aur/.bashrc
