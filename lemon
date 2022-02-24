@@ -445,6 +445,10 @@ function PARTITION {
               ctext magenta std "Error: Format target partition is $(ctext red)ON$(ctext magenta), but no filesystem is selected!"
               ctext magenta std "Please select a filesystem for target partition, or toggle format target partition $(ctext red)OFF"
             fi
+            if [ $RESPONSE == 3 ] && [ $NEEDFSSET == 0 ] && [ $TPFORMAT == 0 ]; then
+              RESPONSE="0"
+              dISCOMP="1"
+            fi
           done
         fi
         if [ $RESPONSE == 3 ]; then
