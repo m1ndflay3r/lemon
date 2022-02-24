@@ -28,6 +28,8 @@ function PREP {
   pacman-key --init
   pacman-key --populate archlinux
   if [ $PARALLELDL == 1 ]; then
+    echo " " >> /etc/pacman.conf
+    echo "[options]" >> /etc/pacman.conf
     echo "ParallelDownloads = $PARALLELDLCOUNT" >> /etc/pacman.conf
   fi
   if ! pacman -Sy; then
