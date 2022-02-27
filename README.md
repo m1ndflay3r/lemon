@@ -33,7 +33,7 @@ give lemon execute permissions
 
 either manually write a packagelist **with each package on its own line**, or use pacman to generate a list on an existing installation (recommended).
 
-   ``` pacman -Qqe | cut -d " " -f1 > /path/to/lemon/directory/lists/packagelist ```
+   ``` pacman -Qqe > /path/to/lemon/directory/lists/packagelist ```
 
 If you generate a packagelist from a preexisting system, you will need to manually copy it to the **lists** folder within lemon on the arch install iso.
 
