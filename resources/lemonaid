@@ -181,6 +181,9 @@ function BOOT {
 # Configuration of the new system.
 # Includes things like hostname, user creation, etc
 function CONF {
+  echo " "
+  ctext green std "        Region Setup"
+  ctext green std "        ------------"
   yes="1"
   while [ ! "$yes" == 0 ]; do
     unset CITY
@@ -223,6 +226,7 @@ function CONF {
   ln -sf /usr/share/zoneinfo/$REGION/$CITY /etc/localtime
   hwclock --systohc
   yes="1"
+  echo " "
   ctext green std "                                         -Locale Setup-"
   ctext green std "                                         --------------"
   echo " "
@@ -389,6 +393,7 @@ function CONF {
   yes="1"
   while [ ! "$yes" == 0 ]; do
     unset HOSTNAME
+    echo " "
     read -p "$(ctext cyan nnl "Please enter a name for the system (hostname): ")" HOSTNAME
     if [ -z "$HOSTNAME" ]; then
       HOSTNAME="NULL"
@@ -399,6 +404,7 @@ function CONF {
   echo "127.0.0.1     localhost" >> /etc/hosts
   echo "::1           localhost" >> /etc/hosts
   echo "127.0.1.1     $HOSTNAME.localdomain $HOSTNAME" >> /etc/hosts
+  echo " "
   if [ $ROOT == 1 ] || [ $NONROOTUSER == 0 ] || [ $SUDO == 0 ]; then
     ctext cyan std "Enter new root password"
     until passwd root; do
@@ -409,6 +415,7 @@ function CONF {
     if which nano &> /dev/null; then
       echo "include /usr/share/nano/*.nanorc" > /root/.nanorc
     fi
+    echo " "
   fi
   if [ $NONROOTUSER == 1 ] || [ $ROOT == 0 ]; then
     yes="1"
@@ -448,6 +455,7 @@ function CONF {
     chown $USER:$USER /home/$USER/.*
   fi
   if [ $POSTINSTALLSCRIPTS == 1 ]; then
+    echo " "
     ctext cyan std "-Executing post-install scripts-"
     PISCRIPTS=$(find /etc/lemon/postinstall/)
     for i in $PISCRIPTS; do
@@ -459,6 +467,7 @@ function CONF {
   fi
   LOG=/tmp/lemonaid.log
   if [ -f "$LOG" ]; then
+    echo " "
     ctext magenta std "Process completed sucessfuly, but errors were detected"
     if isyes "$(ctext cyan nnl "Would you like to read the error log? (Y/n)")"; then
       $EDITOR $LOG
