@@ -336,7 +336,7 @@ function PARTITION {
         clear
         if [ $RESPONSE == 1 ]; then
           fdisk -l
-          "."
+          echo "."
           read -p "$(ctext cyan nnl "Enter target partition: ")" TARGETPART
           if [ -z "$TARGETPART" ]; then
             TARGETPART="NULL"
