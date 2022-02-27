@@ -322,6 +322,7 @@ function PARTITION {
           else
             dISDATAVIEW="0";
           fi;
+          echo " ";
           ctext green std "Additional mountpoint setup menu";
           ctext green std "--------------------------------";
           ctext green std "1 - Set target partition";
