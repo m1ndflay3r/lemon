@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #        Lemon        #
-#      V.1.0 RC5      #
+#      V.1.0 RC6      #
 #---------------------
 # Maintainer: Eris Nihila (M1ndFlay3r)
 #             sp0t1fyfr33tr1alabus3@outlook.com
@@ -24,15 +24,18 @@ source "${BASH_SOURCE%/*}/lemon.conf"
 source "${BASH_SOURCE%/*}/resources/lemonlib"
 STARTDIR=$(pwd)
 
-ctext yellow std " _                                 "
-ctext yellow std "| |                                "
-ctext yellow std "| | ___ _ __ ___   ___  _ __       "
-ctext yellow std "| |/ _ \  _   _ \ / _ \|  _ \      "
-ctext yellow std "| |  __/ | | | | | (_) | | | |     "
-ctext yellow std "|_|\___|_| |_| |_|\___/|_| |_|     "
-ctext yellow std "                                   "
-ctext yellow std "         By $(ctext red)M1ndFlay3r "
-ctext yellow std "- - - - - - - - - - - - - - - -    "
+echo " "
+ctext yellow std "    _                                 "
+ctext yellow std "   | |                                "
+ctext yellow std "   | | ___ _ __ ___   ___  _ __       "
+ctext yellow std "   | |/ _ \  _   _ \ / _ \|  _ \      "
+ctext yellow std "   | |  __/ | | | | | (_) | | | |     "
+ctext yellow std "   |_|\___|_| |_| |_|\___/|_| |_|     "
+ctext yellow std "                                      "
+ctext yellow std "            By $(ctext red)M1ndFlay3r "
+ctext yellow std " - - - - - - - - - - - - - - - - - -  "
+echo " "
+echo " "
 
 ##
 ## Prompts user to edit lemon.conf prior to install
@@ -148,44 +151,46 @@ function PARTITION {
         ISDATAVIEW="0";
       fi;
       echo " ";
-      ctext green std "                 Drive Setup";
-      ctext green std "                 -----------";
-      ctext green std "Choose a menu option to proceed with disk setup.";
-      ctext green std "When you are finished, hit finish to continue the installation.";
+      ctext green std "                   Drive Setup ";
+      ctext green std "                  -------------";
+      ctext green std "  Choose a menu option to proceed with disk setup.";
+      ctext green std "  When you are finished, hit finish to continue the installation.";
       echo " ";
       if [ $BOOTMODE == 0 ]; then
-        ctext cyan std "Note: you MUST have both an EFI and root partition!";
+        ctext cyan std "  Note: you MUST have both an EFI and root partition!";
       else
         if [ $BOOTMODE == 1 ]; then
-          ctext cyan std "Note: you MUST have a root partition!";
+          ctext cyan std "  Note: you MUST have a root partition!";
         else
-          ctext red std "---------------------------------";
-          ctext red std "FATAL: Bootmode detection failed!";
-          ctext red std "---------------------------------";
+          ctext red std "  -----------------------------------";
+          ctext red std "   FATAL: Bootmode detection failed! ";
+          ctext red std "  -----------------------------------";
           exit 1;
         fi;
       fi;
       if [ ! -z "$dDISKPART" ]; then
         echo " ";
 	echo " ";
-        ctext magenta std "Note: $dDISKPART not found in PATH. Defaulting on fdisk.";
+        ctext magenta std "  Note: $dDISKPART not found in PATH. Defaulting on fdisk.";
       fi;
-      ctext green std "...................................................................";
-      ctext green std "1: Drive setup ($DISKPART)";
-      ctext green std "2: Set ROOT partition";
+      ctext green std "  ...................................................................";
+      ctext green std "    1: Drive setup ($DISKPART)";
+      ctext green std "    2: Set ROOT partition";
       if [ $BOOTMODE == 0 ]; then
-        ctext green std "3: Set  EFI partition";
+        ctext green std "  3: Set  EFI partition";
       else
         tput dim;
-        echo -e "\e[9m3: Set  EFI partition\e[0m";
+        echo -e "\e[9m3:   Set  EFI partition\e[0m";
         tput sgr 0;
       fi;
-      ctext green std "4: Set SWAP partition (optional)";
-      ctext green std "5: Set HOME partition (optional)";
-      ctext green std "6: Set additional mountpoints (optional)";
-      ctext green std "7: View change summary";
-      ctext green std "8: Start over";
-      ctext green std "9: Finish"
+      ctext green std "  4: Set SWAP partition (optional)";
+      ctext green std "  5: Set HOME partition (optional)";
+      ctext green std "  6: Set additional mountpoints (optional)";
+      ctext green std "  7: View change summary";
+      ctext green std "  8: Start over";
+      ctext green std "  9: Finish";
+      echo " ";
+      ctext white nnl "  : "
     ' "${PVALID[@]}"
     clear
     if ([ $RESPONSE == 9 ] && [ ! $ROOTSET == 1 ]) || ([ $RESPONSE == 9 ] && [ $BOOTMODE == 0 ] && [ ! $EFISET == 1 ]); then
@@ -322,17 +327,20 @@ function PARTITION {
           else
             dISDATAVIEW="0";
           fi;
-          echo " ";
-          ctext green std "Additional mountpoint setup menu";
-          ctext green std "--------------------------------";
-          ctext green std "1 - Set target partition";
-          ctext green std "2 - Formatting options";
-          ctext green std "3 - Set target partition mountpoint";
-          ctext green std "4 - Set mountpoint options";
-          ctext green std "5 - List changes to commit";
-          ctext green std "6 - Start over";
-          ctext green std "7 - Commit changes";
-	  ctext green std "8 - back"
+	  echo " ";
+          ctext green std " ----------------------------------";
+          ctext green std "  Additional mountpoint setup menu ";
+          ctext green std " ----------------------------------";
+          ctext green std "  1 - Set target partition";
+          ctext green std "  2 - Formatting options";
+          ctext green std "  3 - Set target partition mountpoint";
+          ctext green std "  4 - Set mountpoint options";
+          ctext green std "  5 - List changes to commit";
+          ctext green std "  6 - Start over";
+          ctext green std "  7 - Commit changes";
+	  ctext green std "  8 - back";
+	  echo " ";
+	  ctext green nnl "  : "
         ' "${dVALID[@]}"
         clear
         if [ $RESPONSE == 1 ]; then
@@ -370,11 +378,14 @@ function PARTITION {
                 zISDATAVIEW="0";
               fi;
               echo " ";
-              ctext green std "Format options";
-              ctext green std "--------------";
-              ctext green std "1 - Toggle format target";
-              ctext green std "2 - Filesystem select";
-              ctext green std "3 - back"
+	      ctext green std "  --------------------------";
+              ctext green std "        Format options      ";
+              ctext green std "  --------------------------";
+              ctext green std "   1 - Toggle format target";
+              ctext green std "   2 - Filesystem select";
+              ctext green std "   3 - back";
+	      echo " ";
+	      ctext white nnl "  : "
             ' "${zVALID[@]}"
             clear
             if [ $RESPONSE == 1 ]; then
@@ -403,12 +414,15 @@ function PARTITION {
                     xISDATAVIEW="0";
                   fi;
                   echo " ";
-                  ctext green std "Choose filesystem for target partition";
-                  ctext green std "--------------------------------------";
-                  ctext green std "1 - ext4";
-                  ctext green std "2 - btrfs";
-                  ctext green std "3 - vfat";
-                  ctext green std "4 - back"
+		  ctext green std "  ----------------------------------------";
+                  ctext green std "   Choose filesystem for target partition ";
+                  ctext green std "  ----------------------------------------";
+                  ctext green std "     1 - ext4";
+                  ctext green std "     2 - btrfs";
+                  ctext green std "     3 - vfat";
+                  ctext green std "     4 - back";
+		  echo " ";
+		  ctext white nnl "  : "
                 ' "${xVALID[@]}"
                 clear
                 if [ $RESPONSE == 1 ]; then
