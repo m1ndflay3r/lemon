@@ -177,20 +177,21 @@ function PARTITION {
       ctext green std "    1: Drive setup ($DISKPART)";
       ctext green std "    2: Set ROOT partition";
       if [ $BOOTMODE == 0 ]; then
-        ctext green std "  3: Set  EFI partition";
+        ctext green std "    3: Set  EFI partition";
       else
         tput dim;
-        echo -e "\e[9m3:   Set  EFI partition\e[0m";
+        echo -e "\e[9m    3: Set  EFI partition\e[0m";
         tput sgr 0;
       fi;
-      ctext green std "  4: Set SWAP partition (optional)";
-      ctext green std "  5: Set HOME partition (optional)";
-      ctext green std "  6: Set additional mountpoints (optional)";
-      ctext green std "  7: View change summary";
-      ctext green std "  8: Start over";
-      ctext green std "  9: Finish";
+      ctext green std "    4: Set SWAP partition (optional)";
+      ctext green std "    5: Set HOME partition (optional)";
+      ctext green std "    6: Set additional mountpoints (optional)";
+      ctext green std "    7: View change summary";
+      ctext green std "    8: Start over";
+      ctext green std "    9: Finish";
       echo " ";
-      ctext white nnl "  : "
+      echo " ";
+      ctext white nnl "   : "
     ' "${PVALID[@]}"
     clear
     if ([ $RESPONSE == 9 ] && [ ! $ROOTSET == 1 ]) || ([ $RESPONSE == 9 ] && [ $BOOTMODE == 0 ] && [ ! $EFISET == 1 ]); then
