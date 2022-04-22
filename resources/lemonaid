@@ -98,7 +98,7 @@ function MAIN {
   else
     APLPRES="0"
   fi
-  if [ ! $APLPRES == 1 ]; then
+  if [ $AURPACKAGELIST == 1 ] && [ ! $APLPRES == 1 ]; then
     ctext magenta std "Error: AUR is enabled, but no aurpackagelist found!"
     echo "AUR package installation skipped: No aurpackagelist found!" >> /tmp/lemonaid.log
   fi
