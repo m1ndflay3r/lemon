@@ -114,6 +114,31 @@ function ctext {
   if [ "$1" == white ]; then
     tput setaf 7
   fi
+  # Set background colour from $1
+  if [ "$1" == dblack ]; then
+    tput setab 0
+  fi
+  if [ "$1" == dred ]; then
+    tput setab 1
+  fi
+  if [ "$1" == dgreen ]; then
+    tput setab 2
+  fi
+  if [ "$1" == dyellow ]; then
+    tput setab 3
+  fi
+  if [ "$1" == dblue ]; then
+    tput setab 4
+  fi
+  if [ "$1" == dmagenta ]; then
+    tput setab 5
+  fi
+  if [ "$1" == dcyan ]; then
+    tput setab 6
+  fi
+  if [ "$1" == dwhite ]; then
+    tput setab 7
+  fi
   if [ "$1" == reset ]; then
     tput sgr 0
   fi
