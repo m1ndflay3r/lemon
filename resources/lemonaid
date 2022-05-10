@@ -454,6 +454,9 @@ function CONF {
     chown $USER:$USER /home/$USER
     chown $USER:$USER /home/$USER/.*
   fi
+  if [ $SETNTP == 1 ]; then
+    timedatectl set-ntp true
+  fi
   if [ $POSTINSTALLSCRIPTS == 1 ]; then
     echo " "
     ctext cyan std "-Executing post-install scripts-"
