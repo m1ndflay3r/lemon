@@ -191,7 +191,7 @@ function PARTITION {
       ctext green std "    9: Finish";
       echo " ";
       echo " ";
-      ctext white nnl "   : "
+      ctext white nnl "    : "
     ' "${PVALID[@]}"
     clear
     if ([ $RESPONSE == 9 ] && [ ! $ROOTSET == 1 ]) || ([ $RESPONSE == 9 ] && [ $BOOTMODE == 0 ] && [ ! $EFISET == 1 ]); then
@@ -329,19 +329,19 @@ function PARTITION {
             dISDATAVIEW="0";
           fi;
 	  echo " ";
-          ctext green std " ----------------------------------";
-          ctext green std "  Additional mountpoint setup menu ";
-          ctext green std " ----------------------------------";
-          ctext green std "  1 - Set target partition";
-          ctext green std "  2 - Formatting options";
-          ctext green std "  3 - Set target partition mountpoint";
-          ctext green std "  4 - Set mountpoint options";
-          ctext green std "  5 - List changes to commit";
-          ctext green std "  6 - Start over";
-          ctext green std "  7 - Commit changes";
-	  ctext green std "  8 - back";
+          ctext green std "  ----------------------------------";
+          ctext green std "   Additional mountpoint setup menu ";
+          ctext green std "  ----------------------------------";
+          ctext green std "   1 - Set target partition";
+          ctext green std "   2 - Formatting options";
+          ctext green std "   3 - Set target partition mountpoint";
+          ctext green std "   4 - Set mountpoint options";
+          ctext green std "   5 - List changes to commit";
+          ctext green std "   6 - Start over";
+          ctext green std "   7 - Commit changes";
+	  ctext green std "   8 - back";
 	  echo " ";
-	  ctext green nnl "  : "
+	  ctext green nnl "   : "
         ' "${dVALID[@]}"
         clear
         if [ $RESPONSE == 1 ]; then
@@ -386,7 +386,7 @@ function PARTITION {
               ctext green std "   2 - Filesystem select";
               ctext green std "   3 - back";
 	      echo " ";
-	      ctext white nnl "  : "
+	      ctext white nnl "   : "
             ' "${zVALID[@]}"
             clear
             if [ $RESPONSE == 1 ]; then
@@ -418,12 +418,12 @@ function PARTITION {
 		  ctext green std "  ----------------------------------------";
                   ctext green std "   Choose filesystem for target partition ";
                   ctext green std "  ----------------------------------------";
-                  ctext green std "     1 - ext4";
-                  ctext green std "     2 - btrfs";
-                  ctext green std "     3 - vfat";
-                  ctext green std "     4 - back";
+                  ctext green std "    1 - ext4";
+                  ctext green std "    2 - btrfs";
+                  ctext green std "    3 - vfat";
+                  ctext green std "    4 - back";
 		  echo " ";
-		  ctext white nnl "  : "
+		  ctext white nnl "    : "
                 ' "${xVALID[@]}"
                 clear
                 if [ $RESPONSE == 1 ]; then
