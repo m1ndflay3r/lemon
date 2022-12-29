@@ -451,8 +451,8 @@ function CONF {
     if which nano &> /dev/null; then
       echo "include /usr/share/nano/*.nanorc" > /home/$USER/.nanorc
     fi
-    chown $USER:$USER /home/$USER
-    chown $USER:$USER /home/$USER/.*
+    chown -R $USER:$USER /home/$USER
+    chown -R $USER:$USER /home/$USER/.*
   fi
   if [ $SETNTP == 1 ]; then
     timedatectl set-ntp true
